@@ -1,0 +1,2627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0a0a0b" />
+<title>PRAXIS — WE BUILD THINGS WE CAN'T EXPLAIN.</title>
+<meta name="description" content="PRAXIS is an independent technology organization exploring systems, machines and protocols that exist somewhere between known and unknown." />
+<link rel="canonical" href="https://praxis.systems/" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0a0b'/%3E%3Crect x='6' y='6' width='13' height='13' fill='none' stroke='%23e8e8e6' stroke-width='2'/%3E%3Crect x='15' y='15' width='11' height='11' fill='%23e8e8e6'/%3E%3C/svg%3E" />
+
+<!-- social / link preview -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="PRAXIS" />
+<meta property="og:title" content="PRAXIS — WE BUILD THINGS WE CAN'T EXPLAIN." />
+<meta property="og:description" content="An independent technology organization exploring systems, machines and protocols that exist somewhere between known and unknown." />
+<meta property="og:image" content="/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="https://praxis.systems/" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@PRAXIS_Coin" />
+<meta name="twitter:title" content="PRAXIS — WE BUILD THINGS WE CAN'T EXPLAIN." />
+<meta name="twitter:description" content="An independent technology organization. Some projects are public. Some are classified. Some may not officially exist." />
+<meta name="twitter:image" content="/og.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<!-- Privacy-respecting analytics (no cookies, no PII). Uncomment and set your domain to enable.
+     Plausible: https://plausible.io  ·  or self-host Umami / GoatCounter.
+<script defer data-domain="praxis.systems" src="https://plausible.io/js/script.js"></script>
+-->
+<style>
+/* =============================================================
+   PRAXIS — SYSTEM INTERFACE v1.0.0
+   Single-file build. No external dependencies.
+   ============================================================= */
+
+:root{
+  --bg:            #0a0a0b;
+  --bg-raised:     #101012;
+  --bg-panel:      #0d0d0f;
+  --graphite:      #16161a;
+  --line:          #232327;
+  --line-soft:     #1b1b1f;
+  --charcoal:      #2a2a30;
+  --silver-dim:    #6a6a72;
+  --silver:        #9a9aa2;
+  --off-white:     #e8e8e6;
+  --white:         #f6f6f4;
+  --accent:        #4ade80;      /* muted terminal indicator — used sparingly */
+  --accent-dim:    #2f6f47;
+  --danger:        #d16a5a;
+
+  --font-grotesk: "Space Grotesk", "Helvetica Neue", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --maxw: 1240px;
+  --gutter: clamp(20px, 5vw, 64px);
+  --ease: cubic-bezier(.22,.61,.36,1);
+}
+
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+
+html{ -webkit-text-size-adjust:100%; scroll-behavior:smooth; overflow-x:clip; }
+
+body{
+  background:var(--bg);
+  color:var(--off-white);
+  font-family:var(--font-grotesk);
+  font-size:16px;
+  line-height:1.55;
+  letter-spacing:.01em;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:clip;
+  min-height:100vh;
+}
+
+/* faint engineered grid over the whole page */
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(var(--line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity:.35;
+  pointer-events:none;
+  z-index:0;
+  mask-image: radial-gradient(ellipse 120% 80% at 50% 0%, #000 20%, transparent 80%);
+}
+/* scanline sweep */
+body::after{
+  content:"";
+  position:fixed; left:0; right:0; height:140px; top:-140px;
+  background:linear-gradient(180deg, transparent, rgba(74,222,128,.03) 40%, rgba(255,255,255,.02) 50%, transparent);
+  pointer-events:none; z-index:1;
+  animation: sweep 14s linear infinite;
+}
+@keyframes sweep{ to{ transform:translateY(calc(100vh + 280px)); } }
+
+a{ color:inherit; text-decoration:none; }
+button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; }
+canvas{ display:block; }
+::selection{ background:rgba(74,222,128,.22); color:var(--white); }
+
+:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+#app:focus-visible, .app:focus{ outline:none; }
+
+.skip-link{
+  position:fixed; top:8px; left:8px; z-index:1001;
+  background:var(--bg-raised); border:1px solid var(--accent); color:var(--off-white);
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; padding:10px 14px;
+  transform:translateY(-160%); transition:transform .2s var(--ease);
+}
+.skip-link:focus{ transform:none; }
+.vh{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+/* ---------- typographic primitives ---------- */
+.mono{ font-family:var(--font-mono); }
+.label{
+  font-family:var(--font-mono);
+  font-size:10.5px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--silver-dim);
+}
+.hl{ color:var(--off-white); }
+.dim{ color:var(--silver); }
+.dimmer{ color:var(--silver-dim); }
+
+h1,h2,h3{
+  font-weight:600;
+  letter-spacing:-.02em;
+  line-height:1.02;
+  color:var(--white);
+}
+
+/* ---------- layout ---------- */
+.wrap{ position:relative; z-index:2; max-width:var(--maxw); margin:0 auto; padding-inline:var(--gutter); }
+.app{ position:relative; z-index:2; }
+section{ position:relative; }
+.rule{ height:1px; background:var(--line); border:0; }
+.section-pad{ padding-block:clamp(72px,11vw,140px); }
+
+/* =============================================================
+   LOADING
+   ============================================================= */
+#loader{
+  position:fixed; inset:0; z-index:1000;
+  background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:26px;
+  transition:opacity .5s var(--ease), visibility .5s;
+}
+#loader.done{ opacity:0; visibility:hidden; }
+#loader .lmark{
+  font-family:var(--font-mono);
+  font-size:13px; letter-spacing:.5em; color:var(--off-white);
+  padding-left:.5em;
+}
+#loader .lbox{
+  width:54px; height:46px; position:relative;
+}
+#loader .lbox::before{
+  content:""; position:absolute; left:0; top:0; width:31px; height:31px;
+  border:1.5px solid var(--off-white);
+}
+#loader .lbox::after{
+  content:""; position:absolute; right:0; bottom:0; width:27px; height:27px;
+  background:var(--off-white); animation:lpulse 1.5s var(--ease) infinite;
+}
+@keyframes lpulse{ 0%{ box-shadow:0 0 0 0 rgba(74,222,128,.45);} 100%{ box-shadow:0 0 0 16px rgba(74,222,128,0);} }
+#loader .llog{
+  font-family:var(--font-mono); font-size:11.5px; line-height:2; color:var(--silver-dim);
+  min-width:min(320px,80vw); letter-spacing:.04em;
+}
+#loader .llog b{ color:var(--accent); font-weight:400; float:right; }
+#loader .lskip{
+  position:absolute; bottom:26px; right:26px;
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.2em; color:var(--silver-dim);
+  border:1px solid var(--line); padding:7px 12px;
+}
+#loader .lskip:hover{ color:var(--off-white); border-color:var(--charcoal); }
+.reveal-anim{ animation:rise .7s var(--ease) both; }
+@keyframes rise{ from{ opacity:0; transform:translateY(14px);} to{ opacity:1; transform:none;} }
+
+/* =============================================================
+   HEADER / NAV
+   ============================================================= */
+header.top{
+  position:sticky; top:0; z-index:200;
+  background:rgba(10,10,11,.72);
+  backdrop-filter:blur(14px) saturate(120%);
+  -webkit-backdrop-filter:blur(14px) saturate(120%);
+  border-bottom:1px solid var(--line);
+}
+.top-inner{
+  max-width:var(--maxw); margin:0 auto; padding:0 var(--gutter);
+  height:64px; display:flex; align-items:center; gap:clamp(16px,4vw,44px);
+}
+.brand{ display:flex; align-items:center; gap:11px; flex-shrink:0; }
+.brand .mk{
+  width:19px; height:17px; position:relative; flex-shrink:0;
+}
+.brand .mk::before{
+  content:""; position:absolute; left:0; top:0; width:11px; height:11px;
+  border:1.5px solid var(--off-white);
+}
+.brand .mk::after{
+  content:""; position:absolute; right:0; bottom:0; width:10px; height:10px;
+  background:var(--off-white);
+}
+.brand .wordmark{
+  font-family:var(--font-mono); font-weight:500;
+  letter-spacing:.34em; font-size:13px; color:var(--white); padding-left:.34em;
+}
+@keyframes blink{ 0%,70%{opacity:1;} 71%,100%{opacity:.35;} }
+
+nav.primary{ display:flex; align-items:center; gap:clamp(8px,2vw,22px); margin-left:auto; }
+nav.primary a{
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--silver); padding:6px 2px; position:relative; transition:color .2s;
+}
+nav.primary a:hover{ color:var(--off-white); }
+nav.primary a.active{ color:var(--white); }
+nav.primary a.active::after{
+  content:""; position:absolute; left:0; right:0; bottom:-2px; height:1px; background:var(--accent);
+}
+nav.primary a.tok{
+  border:1px solid var(--line); padding:6px 12px; color:var(--off-white);
+}
+nav.primary a.tok:hover{ border-color:var(--charcoal); background:var(--graphite); }
+nav.primary a.tok.active::after{ display:none; }
+
+.wallet-btn{
+  flex-shrink:0; display:flex; align-items:center; gap:8px;
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--off-white); border:1px solid var(--charcoal); padding:8px 12px; transition:.2s var(--ease);
+}
+.wallet-btn:hover{ background:var(--graphite); border-color:var(--silver-dim); }
+.wallet-btn.on{ border-color:var(--accent-dim); color:var(--accent); }
+.wallet-btn .ar{ font-size:9px; }
+
+#toast{
+  position:fixed; left:50%; bottom:90px; z-index:500;
+  transform:translateX(-50%) translateY(16px);
+  background:var(--bg-raised); border:1px solid var(--charcoal); padding:12px 18px;
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--off-white); opacity:0; visibility:hidden; transition:.28s var(--ease); pointer-events:none;
+  max-width:calc(100vw - 40px); text-align:center;
+}
+#toast.show{ opacity:1; visibility:visible; transform:translateX(-50%) translateY(0); }
+
+.wallet-wrap{ display:grid; grid-template-columns:1fr .9fr; gap:clamp(24px,4vw,54px); align-items:start; }
+@media(max-width:760px){ .wallet-wrap{ grid-template-columns:1fr; } }
+
+/* ---- wallet picker modal ---- */
+#walletModal{
+  position:fixed; inset:0; z-index:420; display:none; align-items:center; justify-content:center;
+  background:rgba(6,6,7,.82); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+  padding:var(--gutter);
+}
+#walletModal.open{ display:flex; }
+#walletModal .wm-panel{
+  background:var(--bg); border:1px solid var(--charcoal); width:100%; max-width:420px;
+  animation:rise .26s var(--ease) both;
+}
+.wm-head{ display:flex; justify-content:space-between; align-items:center; padding:16px 18px; border-bottom:1px solid var(--line); }
+.wm-x{ font-family:var(--font-mono); font-size:12px; letter-spacing:.1em; color:var(--silver); }
+.wm-x:hover{ color:var(--off-white); }
+.wm-body{ padding:14px; }
+.wm-row{
+  width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:13px 14px; border:1px solid var(--line); background:var(--bg-panel); margin-bottom:8px;
+  font-family:var(--font-mono); font-size:13px; letter-spacing:.05em; color:var(--off-white);
+  text-align:left; transition:.16s var(--ease);
+}
+.wm-row:hover{ border-color:var(--charcoal); background:var(--bg-raised); }
+.wm-row-main{ display:flex; align-items:center; gap:12px; min-width:0; }
+.wm-ic{
+  width:24px; height:24px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--line); overflow:hidden;
+}
+.wm-ic img{ width:100%; height:100%; object-fit:cover; }
+.wm-letter{ font-family:var(--font-mono); font-size:12px; color:var(--silver); }
+.wm-tag{ font-family:var(--font-mono); font-size:9px; letter-spacing:.16em; color:var(--silver-dim); flex-shrink:0; }
+.wm-tag.detected{ color:var(--accent); }
+.wm-note{
+  font-family:var(--font-mono); font-size:10px; line-height:1.7; letter-spacing:.03em; color:var(--silver-dim);
+  margin-top:12px; padding-top:12px; border-top:1px solid var(--line-soft);
+}
+.wm-empty{ font-family:var(--font-mono); font-size:11px; color:var(--silver); line-height:1.75; padding:6px 4px 12px; }
+.wm-status{ padding:6px 4px 14px; }
+.wm-status .wm-addr{ display:block; font-family:var(--font-mono); font-size:10.5px; color:var(--silver-dim); word-break:break-all; margin-top:8px; }
+.wm-acts{ display:flex; gap:8px; }
+.wm-acts .btn{ flex:1; justify-content:center; }
+
+.menu-btn{ display:none; margin-left:auto; align-items:center; gap:9px; }
+.menu-btn span{ font-family:var(--font-mono); font-size:10px; letter-spacing:.2em; color:var(--silver); }
+.menu-btn i, .menu-btn i::before, .menu-btn i::after{
+  content:""; display:block; width:18px; height:1.5px; background:var(--off-white); position:relative;
+}
+.menu-btn i::before{ position:absolute; top:-6px; } .menu-btn i::after{ position:absolute; top:6px; }
+
+#mobileNav{
+  position:fixed; inset:64px 0 0; z-index:190; background:var(--bg);
+  border-top:1px solid var(--line);
+  transform:translateY(-8px); opacity:0; visibility:hidden; transition:.28s var(--ease);
+  padding:12px var(--gutter) 40px;
+}
+#mobileNav.open{ transform:none; opacity:1; visibility:visible; }
+#mobileNav a{
+  display:flex; align-items:baseline; justify-content:space-between;
+  padding:20px 0; border-bottom:1px solid var(--line-soft);
+  font-family:var(--font-mono); font-size:15px; letter-spacing:.14em; text-transform:uppercase; color:var(--off-white);
+}
+#mobileNav a .idx{ font-size:10px; color:var(--silver-dim); letter-spacing:.2em; }
+
+/* =============================================================
+   SHARED COMPONENTS
+   ============================================================= */
+.eyebrow{
+  display:inline-flex; align-items:center; gap:10px; margin-bottom:26px;
+}
+.eyebrow::before{ content:""; width:22px; height:1px; background:var(--charcoal); }
+
+.metagrid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr));
+  border:1px solid var(--line); border-bottom:0;
+}
+.metagrid .cell{
+  border-bottom:1px solid var(--line); border-right:1px solid var(--line);
+  padding:18px 18px 16px;
+}
+.metagrid .cell .label{ display:block; margin-bottom:9px; }
+.metagrid .cell .val{
+  font-family:var(--font-mono); font-size:15px; letter-spacing:.04em; color:var(--off-white);
+}
+.metagrid .cell .val.ok{ color:var(--accent); }
+
+.card{
+  border:1px solid var(--line); background:var(--bg-panel);
+  padding:24px; transition:border-color .25s, background .25s, transform .25s;
+  position:relative; overflow:hidden;
+}
+.card::after{
+  content:""; position:absolute; left:0; right:0; top:0; height:1px;
+  background:linear-gradient(90deg, transparent, var(--accent), transparent);
+  transform:translateX(-100%); transition:transform .5s var(--ease); opacity:.6;
+}
+.card:hover{ border-color:var(--charcoal); background:var(--bg-raised); }
+.card:hover::after{ transform:translateX(100%); }
+
+.btn{
+  display:inline-flex; align-items:center; gap:10px;
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--off-white); border:1px solid var(--charcoal); padding:13px 20px;
+  transition:.2s var(--ease);
+}
+.btn:hover{ background:var(--off-white); color:var(--bg); border-color:var(--off-white); }
+.btn.ghost{ border-color:var(--line); color:var(--silver); }
+.btn.ghost:hover{ color:var(--off-white); background:var(--graphite); border-color:var(--charcoal); }
+.btn .ar{ transition:transform .2s; }
+.btn:hover .ar{ transform:translateX(3px); }
+
+.badge{
+  font-family:var(--font-mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase;
+  padding:4px 8px; border:1px solid var(--line); color:var(--silver);
+  display:inline-block; white-space:nowrap;
+}
+.badge.active,.badge.online,.badge.public,.badge.operational{ color:var(--accent); border-color:var(--accent-dim); }
+.badge.unknown,.badge.black,.badge.classified{ color:var(--silver-dim); border-color:var(--line); }
+.badge.paused,.badge.limited,.badge.restricted{ color:#d9b25a; border-color:#5a4a2a; }
+.badge.development,.badge.confidential{ color:var(--silver); border-color:var(--charcoal); }
+
+/* page title block */
+.page-head{ padding-top:clamp(56px,9vw,110px); }
+.page-head h1{ font-size:clamp(34px,6vw,68px); }
+.page-head p.lede{
+  margin-top:22px; max-width:56ch; font-size:clamp(15px,2vw,18px); color:var(--silver);
+}
+
+/* =============================================================
+   HERO
+   ============================================================= */
+.hero{ padding-top:clamp(60px,10vw,120px); padding-bottom:clamp(48px,7vw,90px); }
+.hero h1{
+  font-size:clamp(40px, 8.5vw, 116px);
+  letter-spacing:-.035em; line-height:.96;
+  max-width:16ch;
+}
+.hero .sub{
+  margin-top:34px; max-width:52ch; font-size:clamp(15px,2.1vw,19px); color:var(--silver);
+}
+.hero-grid{
+  display:grid; grid-template-columns:1.35fr .65fr; gap:clamp(30px,5vw,70px); align-items:center;
+}
+.hero-visual{
+  aspect-ratio:1/1; border:1px solid var(--line); position:relative; background:var(--bg-panel);
+}
+.hero-visual canvas{ position:absolute; inset:0; width:100%; height:100%; }
+.hero-visual .corner{
+  position:absolute; width:10px; height:10px; border:1px solid var(--charcoal);
+}
+.hero-visual .corner.tl{ top:-1px; left:-1px; border-right:0; border-bottom:0; }
+.hero-visual .corner.tr{ top:-1px; right:-1px; border-left:0; border-bottom:0; }
+.hero-visual .corner.bl{ bottom:-1px; left:-1px; border-right:0; border-top:0; }
+.hero-visual .corner.br{ bottom:-1px; right:-1px; border-left:0; border-top:0; }
+.hero-visual .vlabel{
+  position:absolute; bottom:12px; left:14px; right:14px; display:flex; justify-content:space-between;
+}
+.hero-side{ display:flex; flex-direction:column; gap:14px; }
+.hero-wallet{
+  border:1px solid var(--line); background:var(--bg-panel);
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.04em; color:var(--silver);
+}
+.hero-wallet .hw-row{
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+  padding:10px 13px; border-bottom:1px solid var(--line-soft);
+}
+.hero-wallet .hw-row:last-child{ border-bottom:0; }
+.hero-wallet .hw-k{ color:var(--silver-dim); font-size:9px; letter-spacing:.18em; text-transform:uppercase; }
+.hero-wallet .hw-v{ color:var(--off-white); }
+.hero-wallet .hw-v.accent{ color:var(--accent); }
+.hero-wallet .hw-bal{
+  padding:14px 13px; display:flex; align-items:baseline; gap:8px; border-bottom:1px solid var(--line-soft);
+}
+.hero-wallet .hw-bal b{ font-family:var(--font-grotesk); font-size:22px; font-weight:600; letter-spacing:-.01em; color:var(--white); }
+.hero-wallet .hw-bal span{ font-size:10px; letter-spacing:.14em; color:var(--silver-dim); }
+.hero-wallet .hw-bal i{
+  width:5px; height:5px; border-radius:50%; background:var(--accent); box-shadow:0 0 6px var(--accent);
+  align-self:center; animation:blink 2.4s steps(1) infinite;
+}
+.hero-wallet.disc{
+  padding:12px 13px; display:flex; justify-content:space-between; align-items:center; gap:10px; cursor:pointer;
+}
+.hero-wallet.disc:hover{ border-color:var(--charcoal); background:var(--bg-raised); }
+.hero-wallet.disc .hw-cta{ color:var(--off-white); }
+.phrases{
+  display:flex; flex-wrap:wrap; gap:8px 10px; margin-top:40px;
+}
+.phrases span{
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--silver-dim); border:1px solid var(--line-soft); padding:6px 10px;
+}
+
+/* =============================================================
+   HOME — extra sections
+   ============================================================= */
+.split-head{
+  display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap;
+  margin-bottom:44px;
+}
+.split-head h2{ font-size:clamp(26px,4vw,44px); }
+.split-head p{ max-width:38ch; color:var(--silver); font-size:14.5px; }
+
+.proj-list{ border-top:1px solid var(--line); }
+.proj-row{
+  display:grid; grid-template-columns:88px 1.1fr 1.4fr auto;
+  gap:24px; align-items:center;
+  padding:26px 8px; border-bottom:1px solid var(--line);
+  transition:background .2s, padding .25s var(--ease); cursor:pointer;
+}
+.proj-row:hover{ background:var(--bg-panel); padding-inline:20px 16px; }
+.proj-row .pid{ font-family:var(--font-mono); font-size:12px; color:var(--silver-dim); letter-spacing:.1em; }
+.proj-row .pname{ font-family:var(--font-mono); font-size:16px; letter-spacing:.12em; color:var(--white); }
+.proj-row .pdesc{ font-size:13.5px; color:var(--silver); }
+.proj-row .pmeta{ display:flex; gap:8px; align-items:center; justify-self:end; }
+@media(max-width:820px){
+  .proj-row{ grid-template-columns:64px 1fr; gap:6px 16px; }
+  .proj-row .pdesc{ grid-column:1/-1; }
+  .proj-row .pmeta{ grid-column:2; justify-self:start; }
+  .proj-row:hover{ padding-inline:8px; }
+}
+
+.manifesto-item{
+  display:grid; grid-template-columns:120px 1fr; gap:24px; padding:34px 0; border-top:1px solid var(--line);
+}
+.manifesto-item .mno{ font-family:var(--font-mono); font-size:13px; color:var(--silver-dim); letter-spacing:.2em; }
+.manifesto-item h3{ font-size:clamp(22px,3.4vw,34px); margin-bottom:8px; }
+.manifesto-item p{ color:var(--silver); max-width:44ch; }
+@media(max-width:640px){ .manifesto-item{ grid-template-columns:1fr; gap:8px; } }
+
+/* =============================================================
+   SYSTEM PAGE
+   ============================================================= */
+.graphbox{
+  border:1px solid var(--line); background:var(--bg-panel); padding:20px; margin-top:34px; position:relative;
+}
+.graphbox canvas{ width:100%; height:220px; }
+.graphbox .gtop{ display:flex; justify-content:space-between; margin-bottom:14px; }
+
+.proc-list{ margin-top:34px; border:1px solid var(--line); }
+.proc-list .ph{
+  display:grid; grid-template-columns:70px 1fr 130px 90px; gap:16px; padding:12px 16px;
+  border-bottom:1px solid var(--line); background:var(--graphite);
+}
+.proc-list .pr{
+  display:grid; grid-template-columns:70px 1fr 130px 90px; gap:16px; padding:12px 16px;
+  border-bottom:1px solid var(--line-soft); font-family:var(--font-mono); font-size:12px; color:var(--silver);
+}
+.proc-list .pr:last-child{ border-bottom:0; }
+.proc-list .pr .nm{ color:var(--off-white); }
+@media(max-width:640px){
+  .proc-list .ph,.proc-list .pr{ grid-template-columns:52px 1fr 70px; }
+  .proc-list .ph span:nth-child(3),.proc-list .pr span:nth-child(3){ display:none; }
+}
+
+/* =============================================================
+   FILES
+   ============================================================= */
+.file-grid{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1px;
+  background:var(--line); border:1px solid var(--line);
+}
+.file-cell{
+  background:var(--bg-panel); padding:22px; cursor:pointer; transition:background .2s; min-height:150px;
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+.file-cell:hover{ background:var(--bg-raised); }
+.file-cell .fid{ font-family:var(--font-mono); font-size:11px; color:var(--silver-dim); letter-spacing:.18em; }
+.file-cell .ftitle{ font-size:17px; color:var(--white); margin-top:10px; letter-spacing:-.01em; }
+.file-cell .fbot{ display:flex; justify-content:space-between; align-items:center; margin-top:20px; }
+.file-cell .fdate{ font-family:var(--font-mono); font-size:10.5px; color:var(--silver-dim); letter-spacing:.1em; }
+
+/* =============================================================
+   NETWORK
+   ============================================================= */
+.netbox{
+  border:1px solid var(--line); background:var(--bg-panel); position:relative; margin-top:34px;
+  height:min(560px, 68vh);
+}
+.netbox canvas{ position:absolute; inset:0; width:100%; height:100%; }
+.netbox .nlabel{ position:absolute; top:14px; left:16px; }
+.netbox .nlegend{ position:absolute; bottom:14px; left:16px; display:flex; gap:16px; flex-wrap:wrap; }
+.netbox .nlegend span{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:.14em; color:var(--silver-dim); }
+
+/* =============================================================
+   ACCESS
+   ============================================================= */
+.term-panel{
+  border:1px solid var(--line); background:var(--bg-panel); margin-top:34px;
+}
+.term-panel .tbar{
+  display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--line);
+  background:var(--graphite);
+}
+.term-panel .tbar i{ width:8px; height:8px; border:1px solid var(--charcoal); border-radius:50%; }
+.term-panel .tbar .tt{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:.2em; color:var(--silver-dim); margin-left:6px; }
+.term-panel .tbody{ padding:22px; font-family:var(--font-mono); font-size:13px; line-height:1.9; color:var(--silver); }
+.term-panel .tbody .k{ color:var(--silver-dim); }
+.term-panel .tbody .v{ color:var(--off-white); }
+.access-actions{ display:flex; flex-wrap:wrap; gap:12px; margin-top:26px; }
+
+/* =============================================================
+   LOGS
+   ============================================================= */
+.logbox{
+  border:1px solid var(--line); background:#08080a; margin-top:34px; height:min(520px,64vh);
+  display:flex; flex-direction:column;
+}
+.logbox .lbar{
+  display:flex; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--line);
+  background:var(--graphite);
+}
+.logstream{
+  flex:1; overflow-y:auto; padding:16px; font-family:var(--font-mono); font-size:12px; line-height:1.95;
+}
+.logstream .ln{ display:flex; gap:14px; color:var(--silver); }
+.logstream .ln .ts{ color:var(--silver-dim); flex-shrink:0; }
+.logstream .ln.warn .msg{ color:#d9b25a; }
+.logstream .ln.alert .msg{ color:var(--danger); }
+.logstream .ln.ok .msg{ color:var(--accent); }
+.logstream::-webkit-scrollbar{ width:8px; }
+.logstream::-webkit-scrollbar-thumb{ background:var(--line); }
+
+/* =============================================================
+   $PRX
+   ============================================================= */
+.box-hero{ display:grid; grid-template-columns:1fr .8fr; gap:clamp(30px,5vw,64px); align-items:center; }
+.box-mark{
+  aspect-ratio:1/1; border:1px solid var(--line); background:var(--bg-panel); position:relative;
+  display:flex; align-items:center; justify-content:center;
+}
+.box-mark svg{ width:44%; height:44%; }
+.dash{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  border:1px solid var(--line); border-bottom:0; margin-top:16px;
+}
+.dash .d{
+  border-bottom:1px solid var(--line); border-right:1px solid var(--line); padding:20px 18px;
+}
+.dash .d .label{ display:block; margin-bottom:10px; }
+.dash .d .dv{ font-family:var(--font-mono); font-size:20px; color:var(--off-white); letter-spacing:.02em; }
+.dash .d .dv.na{ color:var(--silver-dim); font-size:13px; letter-spacing:.14em; }
+
+.dist-row{ padding:16px 0; border-top:1px solid var(--line); }
+.dist-row:last-child{ border-bottom:1px solid var(--line); }
+.dist-top{ display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:12px; letter-spacing:.1em; color:var(--off-white); }
+.dist-bar{ height:4px; background:var(--graphite); margin:10px 0 8px; }
+.dist-bar i{ display:block; height:100%; background:var(--silver); }
+.dist-note{ font-family:var(--font-mono); font-size:10px; letter-spacing:.12em; color:var(--silver-dim); text-transform:uppercase; }
+.chart-ph{
+  border:1px solid var(--line); background:#08080a; height:300px; margin-top:16px; position:relative; overflow:hidden;
+}
+.chart-ph canvas{ position:absolute; inset:0; width:100%; height:100%; }
+.chart-ph .cph-tag{
+  position:absolute; top:14px; left:16px; font-family:var(--font-mono); font-size:10px;
+  letter-spacing:.2em; color:var(--silver-dim);
+}
+.chart-ph .cph-mid{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.3em; color:var(--silver-dim);
+}
+@media(max-width:820px){ .box-hero{ grid-template-columns:1fr; } }
+
+/* =============================================================
+   MODAL
+   ============================================================= */
+#modal{
+  position:fixed; inset:0; z-index:400; display:none;
+  background:rgba(6,6,7,.82); backdrop-filter:blur(4px);
+  padding:var(--gutter);
+  align-items:center; justify-content:center;
+}
+#modal.open{ display:flex; }
+#modal .mpanel{
+  background:var(--bg); border:1px solid var(--charcoal); max-width:720px; width:100%;
+  max-height:86vh; overflow-y:auto; position:relative;
+  animation:rise .3s var(--ease) both;
+}
+#modal .mpanel::-webkit-scrollbar{ width:8px; } #modal .mpanel::-webkit-scrollbar-thumb{ background:var(--line); }
+#modal .mhead{
+  position:sticky; top:0; background:var(--bg); border-bottom:1px solid var(--line);
+  padding:18px 22px; display:flex; justify-content:space-between; align-items:center;
+}
+#modal .mclose{ font-family:var(--font-mono); font-size:11px; letter-spacing:.2em; color:var(--silver); }
+#modal .mclose:hover{ color:var(--off-white); }
+#modal .mbody{ padding:26px 22px 34px; }
+#modal .mbody h2{ font-size:clamp(24px,4vw,38px); margin-bottom:6px; }
+#modal .kv{
+  display:grid; grid-template-columns:150px 1fr; gap:6px 20px; margin:22px 0;
+  font-family:var(--font-mono); font-size:12.5px;
+}
+#modal .kv dt{ color:var(--silver-dim); letter-spacing:.12em; text-transform:uppercase; }
+#modal .kv dd{ color:var(--off-white); }
+#modal .doc-row{
+  display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-top:1px solid var(--line-soft);
+  font-family:var(--font-mono); font-size:12px; color:var(--silver);
+}
+#modal .doc-row.locked{ color:var(--silver-dim); }
+#modal .denied{
+  text-align:center; padding:30px 10px;
+}
+#modal .denied .dbox{
+  width:52px; height:52px; border:1.5px solid var(--danger); margin:0 auto 22px; position:relative;
+}
+#modal .denied .dbox::before,#modal .denied .dbox::after{
+  content:""; position:absolute; top:50%; left:15%; right:15%; height:1.5px; background:var(--danger);
+}
+#modal .denied .dbox::before{ transform:rotate(45deg); } #modal .denied .dbox::after{ transform:rotate(-45deg); }
+#modal .denied h2{ color:var(--danger); font-family:var(--font-mono); font-size:18px; letter-spacing:.1em; }
+#modal .denied p{ color:var(--silver); margin-top:12px; font-size:13.5px; }
+#modal .denied .clr{
+  margin-top:22px; font-family:var(--font-mono); font-size:11px; letter-spacing:.2em; color:var(--silver-dim);
+  border:1px solid var(--line); display:inline-block; padding:8px 14px;
+}
+
+/* =============================================================
+   FLOATING TERMINAL
+   ============================================================= */
+#termToggle{
+  position:fixed; right:22px; bottom:22px; z-index:300;
+  border:1px solid var(--charcoal); background:var(--bg); padding:11px 15px;
+  font-family:var(--font-mono); font-size:10.5px; letter-spacing:.2em; color:var(--off-white);
+  display:flex; gap:9px; align-items:center;
+  transition:.2s;
+}
+#termToggle:hover{ background:var(--graphite); border-color:var(--silver-dim); }
+#termToggle i{ width:6px; height:6px; background:var(--accent); border-radius:50%; box-shadow:0 0 6px var(--accent); }
+
+#terminal{
+  position:fixed; right:22px; bottom:22px; z-index:301;
+  width:min(460px, calc(100vw - 44px)); height:min(420px, 62vh);
+  background:#08080a; border:1px solid var(--charcoal);
+  display:none; flex-direction:column;
+  box-shadow:0 24px 80px -20px rgba(0,0,0,.8);
+}
+#terminal.open{ display:flex; }
+#terminal .thead{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 14px; border-bottom:1px solid var(--line); background:var(--graphite);
+}
+#terminal .thead .tl{ font-family:var(--font-mono); font-size:10px; letter-spacing:.24em; color:var(--silver-dim); }
+#terminal .thead button{ font-family:var(--font-mono); font-size:11px; color:var(--silver); letter-spacing:.1em; }
+#terminal .thead button:hover{ color:var(--off-white); }
+#termOut{
+  flex:1; overflow-y:auto; padding:14px; font-family:var(--font-mono); font-size:12px; line-height:1.75;
+  color:var(--silver); white-space:pre-wrap; word-break:break-word;
+}
+#termOut::-webkit-scrollbar{ width:7px; } #termOut::-webkit-scrollbar-thumb{ background:var(--line); }
+#termOut .cmd{ color:var(--off-white); }
+#termOut .accent{ color:var(--accent); }
+#termOut .warnc{ color:var(--danger); }
+#termInputLine{ display:flex; align-items:center; gap:8px; padding:10px 14px; border-top:1px solid var(--line); }
+#termInputLine .ps1{ font-family:var(--font-mono); font-size:12px; color:var(--accent); }
+#termInput{
+  flex:1; background:none; border:0; outline:0; color:var(--off-white);
+  font-family:var(--font-mono); font-size:12px; letter-spacing:.02em;
+}
+
+/* =============================================================
+   FOOTER
+   ============================================================= */
+footer.bot{ border-top:1px solid var(--line); margin-top:40px; padding-block:56px 40px; }
+.foot-grid{ display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr; gap:40px; }
+.foot-grid .fbrand .wm{
+  font-family:var(--font-mono); letter-spacing:.34em; font-size:14px; color:var(--white); padding-left:.34em;
+}
+.foot-grid .fbrand p{ margin-top:14px; color:var(--silver-dim); font-size:12.5px; max-width:34ch; }
+.foot-col h4{ font-family:var(--font-mono); font-size:10px; letter-spacing:.2em; color:var(--silver-dim); text-transform:uppercase; margin-bottom:16px; }
+.foot-col a{ display:block; padding:6px 0; font-family:var(--font-mono); font-size:12px; color:var(--silver); letter-spacing:.06em; }
+.foot-col a:hover{ color:var(--off-white); }
+.foot-legal{
+  margin-top:44px; padding-top:22px; border-top:1px solid var(--line-soft);
+  display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  font-family:var(--font-mono); font-size:10.5px; color:var(--silver-dim); letter-spacing:.08em;
+}
+.foot-legal .disc{ max-width:60ch; line-height:1.7; }
+@media(max-width:760px){ .foot-grid{ grid-template-columns:1fr 1fr; } .foot-grid .fbrand{ grid-column:1/-1; } }
+@media(max-width:440px){ .foot-grid{ grid-template-columns:1fr; } }
+
+/* =============================================================
+   SCROLL CHOREOGRAPHY
+   ============================================================= */
+#scrollbar{
+  position:fixed; top:0; left:0; height:2px; width:0%;
+  background:linear-gradient(90deg, rgba(74,222,128,0), var(--accent));
+  z-index:260; pointer-events:none;
+  box-shadow:0 0 10px rgba(74,222,128,.45);
+}
+
+/* generic reveal-on-enter — arrives out of focus and settles */
+[data-reveal]{
+  opacity:0; transform:translateY(22px) scale(.992); filter:blur(7px);
+  transition:opacity .8s var(--ease), transform .8s var(--ease), filter .8s var(--ease);
+  transition-delay:var(--d,0ms);
+}
+[data-reveal].is-in{ opacity:1; transform:none; filter:none; }
+
+/* hairlines draw themselves in */
+[data-reveal="rule"]{
+  opacity:1; transform:scaleX(0); transform-origin:left center; filter:none;
+  transition:transform 1s var(--ease); transition-delay:var(--d,0ms);
+}
+[data-reveal="rule"].is-in{ transform:scaleX(1); }
+
+/* headings type themselves up from behind a mask */
+[data-reveal="mask"]{ opacity:1; transform:none; filter:none; }
+
+/* panels get a scanning edge as they arrive */
+[data-reveal="panel"]{ position:relative; }
+[data-reveal="panel"].is-in::before{
+  content:""; position:absolute; left:0; top:0; height:1px; width:100%;
+  background:linear-gradient(90deg, transparent, var(--accent), transparent);
+  transform:scaleX(0); transform-origin:left;
+  animation:scanIn 1.1s var(--ease) .1s forwards; pointer-events:none; z-index:3;
+}
+@keyframes scanIn{ 40%{ transform:scaleX(1); opacity:.9; } 100%{ transform:scaleX(1); opacity:0; } }
+
+/* masked word-rise, used by the hero headline and every section heading */
+.mask-rise .hw{
+  display:inline-block; overflow:hidden; vertical-align:bottom;
+  padding-bottom:.09em; margin-bottom:-.09em;
+}
+.mask-rise .hw > span{
+  display:inline-block; transform:translateY(110%);
+  transition:transform .95s cubic-bezier(.16,.84,.32,1); transition-delay:var(--d,0ms);
+}
+.mask-rise.is-in .hw > span{ transform:none; }
+
+.hero-visual{ will-change:transform; }
+
+/* rows slide in from the leading edge, with a light that runs along them */
+[data-reveal="row"]{ opacity:0; transform:translateX(-16px); filter:blur(3px); }
+[data-reveal="row"].is-in{ opacity:1; transform:none; filter:none; }
+[data-reveal="row"]{ position:relative; }
+[data-reveal="row"].is-in::after{
+  content:""; position:absolute; left:0; right:0; bottom:-1px; height:1px;
+  background:linear-gradient(90deg, var(--accent), transparent);
+  transform-origin:left; animation:rowLine .9s var(--ease) both; pointer-events:none;
+}
+@keyframes rowLine{ 0%{ transform:scaleX(0); opacity:.8; } 70%{ transform:scaleX(1); opacity:.5; } 100%{ transform:scaleX(1); opacity:0; } }
+
+/* the background grid drifts a little as you scroll — depth without noise */
+body::before{ background-position:0 var(--gy,0px), 0 0; }
+
+/* =============================================================
+   OPENING SEQUENCES  —  records, pickers, terminal
+   ============================================================= */
+
+/* a record opens like a channel being cut open, then the border cools down */
+#modal.open .mpanel{
+  animation:panelIn .5s var(--ease) both, borderCool 1.3s var(--ease) both;
+}
+@keyframes panelIn{
+  0%  { opacity:0; clip-path:inset(49% 0 49% 0); transform:translateY(6px); }
+  55% { opacity:1; clip-path:inset(0 0 0 0); }
+  100%{ opacity:1; clip-path:inset(0 0 0 0); transform:none; }
+}
+@keyframes borderCool{ 0%,15%{ border-color:var(--accent); } 100%{ border-color:var(--charcoal); } }
+
+/* a single scan passes down the overlay as it opens */
+#modal.open::before, #walletModal.open::before{
+  content:""; position:absolute; left:0; right:0; top:-240px; height:240px; z-index:0;
+  background:linear-gradient(180deg, transparent, rgba(74,222,128,.07), transparent);
+  animation:overlaySweep .95s var(--ease) forwards; pointer-events:none;
+}
+@keyframes overlaySweep{ to{ transform:translateY(calc(100vh + 240px)); } }
+
+/* record contents cascade */
+@keyframes mIn{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
+#modal.open .mbody > *,
+#walletModal.open #wmList > *{ animation:mIn .55s var(--ease) both; }
+#modal.open .mbody > *:nth-child(1),#walletModal.open #wmList > *:nth-child(1){ animation-delay:.18s; }
+#modal.open .mbody > *:nth-child(2),#walletModal.open #wmList > *:nth-child(2){ animation-delay:.24s; }
+#modal.open .mbody > *:nth-child(3),#walletModal.open #wmList > *:nth-child(3){ animation-delay:.30s; }
+#modal.open .mbody > *:nth-child(4),#walletModal.open #wmList > *:nth-child(4){ animation-delay:.36s; }
+#modal.open .mbody > *:nth-child(5),#walletModal.open #wmList > *:nth-child(5){ animation-delay:.42s; }
+#modal.open .mbody > *:nth-child(n+6),#walletModal.open #wmList > *:nth-child(n+6){ animation-delay:.48s; }
+#modal.open #mdocs .doc-row{ animation:mIn .5s var(--ease) both; }
+#modal.open #mdocs .doc-row:nth-child(2){ animation-delay:.06s; }
+#modal.open #mdocs .doc-row:nth-child(3){ animation-delay:.12s; }
+
+/* a refusal reads red rather than moving — the border and the scan cool from
+   danger instead of accent, no shake */
+#modal.open.is-denied .mpanel{
+  animation:panelIn .5s var(--ease) both, borderCoolRed 1.4s var(--ease) both;
+}
+@keyframes borderCoolRed{ 0%,18%{ border-color:var(--danger); } 100%{ border-color:var(--charcoal); } }
+#modal.open.is-denied::before{
+  background:linear-gradient(180deg, transparent, rgba(209,106,90,.08), transparent);
+}
+#modal.open .denied .dbox{ animation:dboxIn .55s var(--ease) .12s both; }
+@keyframes dboxIn{ from{ opacity:0; transform:scale(.82); } to{ opacity:1; transform:none; } }
+
+/* the terminal unfolds from its corner */
+#terminal.open{ animation:termIn .36s var(--ease) both; transform-origin:100% 100%; }
+@keyframes termIn{
+  from{ opacity:0; transform:translateY(16px) scale(.94); clip-path:inset(72% 0 0 0); }
+  to  { opacity:1; transform:none; clip-path:inset(0 0 0 0); }
+}
+
+/* each log line arrives on its own */
+@keyframes logIn{ from{ opacity:0; transform:translateX(-10px); } to{ opacity:1; transform:none; } }
+.logstream .ln{ animation:logIn .38s var(--ease) both; }
+
+/* =============================================================
+   RESPONSIVE
+   ============================================================= */
+@media(max-width:1000px){
+  nav.primary{ display:none; }
+  .menu-btn{ display:flex; }
+  .wallet-btn{ margin-left:auto; }
+  .hero-grid{ grid-template-columns:1fr; }
+  .hero-side{ max-width:360px; }
+}
+@media(max-width:520px){ .wallet-btn{ display:none; } }
+@media(max-width:640px){
+  .metagrid{ grid-template-columns:repeat(2,1fr); }
+  .dash{ grid-template-columns:repeat(2,1fr); }
+  #termToggle{ right:14px; bottom:14px; }
+  #terminal{ right:12px; bottom:12px; }
+  .section-pad{ padding-block:64px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  body::after{ display:none; }
+  [data-reveal]{ opacity:1 !important; transform:none !important; filter:none !important; }
+  .mask-rise .hw > span{ transform:none !important; }
+  #modal.open::before, #walletModal.open::before{ display:none; }
+}
+</style>
+</head>
+<body>
+
+<button class="skip-link" id="skipLink">SKIP TO CONTENT</button>
+<div id="scrollbar" aria-hidden="true"></div>
+
+<!-- ============ LOADER ============ -->
+<div id="loader" role="status" aria-label="System initializing">
+  <div class="lbox" aria-hidden="true"></div>
+  <div class="lmark">PRAXIS</div>
+  <div class="llog" id="llog"></div>
+  <button class="lskip" id="lskip" aria-label="Skip intro">SKIP ▸</button>
+</div>
+
+<!-- ============ HEADER ============ -->
+<header class="top">
+  <div class="top-inner">
+    <a href="#/" class="brand" aria-label="PRAXIS home">
+      <span class="mk"></span>
+      <span class="wordmark">PRAXIS</span>
+    </a>
+    <nav class="primary" id="primaryNav" aria-label="Primary"></nav>
+    <button class="wallet-btn" id="walletBtn" aria-label="Connect wallet">CONNECT</button>
+    <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false"><span>SYSTEM</span><i aria-hidden="true"></i></button>
+  </div>
+</header>
+<div id="mobileNav"></div>
+
+<!-- ============ APP ROOT ============ -->
+<main class="app" id="app" tabindex="-1" aria-label="Content"></main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="fbrand">
+        <div class="wm">PRAXIS</div>
+        <p>WE BUILD THINGS WE CAN'T EXPLAIN.</p>
+      </div>
+      <div class="foot-col">
+        <h4>System</h4>
+        <a href="#/system">System</a>
+        <a href="#/projects">Projects</a>
+        <a href="#/files">Files</a>
+        <a href="#/network">Network</a>
+      </div>
+      <div class="foot-col">
+        <h4>Interface</h4>
+        <a href="#/access">Access</a>
+        <a href="#/logs">Logs</a>
+        <a href="#/about">About</a>
+        <a href="#/prx">$PRX</a>
+      </div>
+      <div class="foot-col">
+        <h4>Monitored Channel</h4>
+        <a href="https://x.com/PRAXIS_Coin" target="_blank" rel="noopener">x.com/PRAXIS_Coin ↗</a>
+      </div>
+    </div>
+    <div class="foot-legal">
+      <div class="disc">PRAXIS is an experimental digital project. Nothing on this website constitutes financial advice, an offer of securities, or a guarantee of future value. Digital assets involve substantial risk.</div>
+      <div>© 2026 PRAXIS &nbsp;·&nbsp; SYSTEM VERSION 1.0.0</div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ MODAL ============ -->
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTag">
+  <div class="mpanel">
+    <div class="mhead">
+      <span class="label" id="modalTag">RECORD</span>
+      <button class="mclose" id="modalClose" aria-label="Close">CLOSE ✕</button>
+    </div>
+    <div class="mbody" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ============ WALLET MODAL ============ -->
+<div id="walletModal" role="dialog" aria-modal="true" aria-labelledby="wmHead">
+  <div class="wm-panel">
+    <div class="wm-head">
+      <span class="label" id="wmHead">CONNECT A WALLET</span>
+      <button class="wm-x" id="wmClose" aria-label="Close">✕</button>
+    </div>
+    <div class="wm-body">
+      <div id="wmList"></div>
+      <p class="wm-note">PRAXIS reads your public address only. It never sees your private key or recovery phrase, cannot move funds, and cannot sign anything without a separate prompt from your wallet.</p>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- ============ FLOATING TERMINAL ============ -->
+<button id="termToggle" aria-label="Open terminal"><i aria-hidden="true"></i>TERMINAL</button>
+<div id="terminal" role="dialog" aria-label="PRAXIS terminal">
+  <div class="thead">
+    <span class="tl">PRAXIS // SECURE TERMINAL</span>
+    <button id="termClose" aria-label="Close terminal">CLOSE ✕</button>
+  </div>
+  <div id="termOut" role="log" aria-label="Terminal output"></div>
+  <div id="termInputLine">
+    <span class="ps1">prx&nbsp;$</span>
+    <input id="termInput" autocomplete="off" autocapitalize="off" spellcheck="false" />
+  </div>
+</div>
+
+<script>
+/* =============================================================
+   DATA  —  central configuration (swap for real API later)
+   ============================================================= */
+const DATA = {
+  channel: { label:"x.com/PRAXIS_Coin", href:"https://x.com/PRAXIS_Coin" },
+  system: {
+    status:"ONLINE", core:"STABLE", network:"OPERATIONAL", security:"ACTIVE",
+    externalAccess:"LIMITED", activeProcesses:17, unknownProcesses:3,
+    classification:"RESTRICTED", location:"UNKNOWN",
+    epoch: Date.UTC(2023, 10, 2, 4, 41, 7)   // PRAXIS system start — fictional
+  },
+  nav: [
+    {label:"SYSTEM",   href:"#/system"},
+    {label:"PROJECTS", href:"#/projects"},
+    {label:"FILES",    href:"#/files"},
+    {label:"NETWORK",  href:"#/network"},
+    {label:"ACCESS",   href:"#/access"},
+    {label:"LOGS",     href:"#/logs"},
+    {label:"ABOUT",    href:"#/about"},
+  ],
+  projects: [
+    { id:"001", name:"ORIGIN", status:"ACTIVE", classification:"RESTRICTED",
+      created:"2023.11.02", updated:"live",
+      description:"An experimental system designed to explore autonomous digital coordination.",
+      notes:"Coordination remains stable under load. Emergent addressing behaviour logged but not yet explained.",
+      team:"CELL 01", docs:[{n:"ORIGIN — DESIGN NOTES", locked:false},{n:"ORIGIN — COORDINATION LOG 44", locked:true},{n:"ORIGIN — ANOMALY 07", locked:true}] },
+    { id:"002", name:"NULL", status:"UNKNOWN", classification:"BLACK",
+      created:"—", updated:"—",
+      description:"No public documentation available.",
+      notes:"—",
+      team:"—", docs:[{n:"[REDACTED]", locked:true},{n:"[REDACTED]", locked:true}] },
+    { id:"003", name:"ECHO", status:"DEVELOPMENT", classification:"RESTRICTED",
+      created:"2024.03.19", updated:"2026.08.28",
+      description:"A system designed to study persistence across distributed environments.",
+      notes:"Persistence exceeds expected decay window by a factor we have stopped measuring.",
+      team:"CELL 03", docs:[{n:"ECHO — PERSISTENCE MODEL", locked:false},{n:"ECHO — FIELD TRIAL 12", locked:true}] },
+    { id:"004", name:"VECTOR", status:"PAUSED", classification:"CONFIDENTIAL",
+      created:"2024.01.08", updated:"2025.09.30",
+      description:"Research discontinued after unexpected network behavior.",
+      notes:"Suspended pending review. Network activity continued for 11 days after shutdown order.",
+      team:"CELL 02", docs:[{n:"VECTOR — INCIDENT SUMMARY", locked:false},{n:"VECTOR — POST-SHUTDOWN TRACE", locked:true}] },
+    { id:"005", name:"MIRROR", status:"ACTIVE", classification:"RESTRICTED",
+      created:"2024.06.14", updated:"live",
+      description:"A system that observes the system observing itself.",
+      notes:"Recursion depth capped at 9. Reason for cap not documented.",
+      team:"CELL 01", docs:[{n:"MIRROR — OBSERVER SPEC", locked:false},{n:"MIRROR — DEPTH 9 REPORT", locked:true}] },
+    { id:"006", name:"HOLLOW", status:"DEVELOPMENT", classification:"RESTRICTED",
+      created:"2025.02.27", updated:"2026.08.31",
+      description:"Storage without a retrieval mechanism. Purpose under evaluation.",
+      notes:"Write throughput nominal. Nothing has been read back. This is intentional.",
+      team:"CELL 04", docs:[{n:"HOLLOW — WRITE PROTOCOL", locked:false},{n:"HOLLOW — CAPACITY", locked:true}] },
+    { id:"007", name:"CARRIER", status:"ACTIVE", classification:"CONFIDENTIAL",
+      created:"2025.07.03", updated:"live",
+      description:"A transport layer for signals with no defined origin.",
+      notes:"Signals arrive. We forward them. We do not open them.",
+      team:"CELL 02", docs:[{n:"CARRIER — ROUTING TABLE", locked:false},{n:"CARRIER — UNRESOLVED SOURCES", locked:true}] },
+  ],
+  files: [
+    { id:"PRX-001", title:"Origin Protocol",        date:"2023.11.02", classification:"PUBLIC",     status:"AVAILABLE",
+      body:"The founding operational document. Establishes the principle that a system may be deployed before it is understood, provided its behaviour is observed continuously and its access is monitored." },
+    { id:"PRX-017", title:"Network Observation",     date:"2024.05.21", classification:"RESTRICTED", status:"LIMITED" },
+    { id:"PRX-024", title:"Incident Report",         date:"2025.09.30", classification:"RESTRICTED", status:"LIMITED" },
+    { id:"PRX-031", title:"Unknown Signal",          date:"2026.01.14", classification:"CLASSIFIED", status:"SEALED" },
+    { id:"PRX-044", title:"System Architecture",     date:"2024.02.09", classification:"PUBLIC",     status:"AVAILABLE",
+      body:"High-level topology of the PRAXIS environment: a core, an archive, a set of numbered nodes, and an allowance for nodes that are not numbered. The architecture assumes parts of itself will change without notice." },
+    { id:"PRX-051", title:"Null Event",              date:"—",          classification:"UNKNOWN",    status:"UNKNOWN" },
+    { id:"PRX-068", title:"Continuity Note",         date:"2026.07.02", classification:"PUBLIC",     status:"AVAILABLE",
+      body:"Not every experiment has an ending. Projects marked PAUSED are not closed; projects with no status were never opened in a way we can describe." },
+    { id:"PRX-072", title:"Access Ledger",           date:"2026.08.30", classification:"CLASSIFIED", status:"SEALED" },
+    { id:"PRX-000", title:"— — —",                   date:"—",          classification:"UNKNOWN",    status:"UNINDEXED", hidden:true,
+      body:"SOME THINGS AREN'T DOCUMENTED." },
+  ],
+  network: {
+    status:"ONLINE", activeNodes:1284, connectedSystems:43,
+    nodes:["CORE","NODE 01","NODE 07","NODE 13","ARCHIVE","REMOTE","UNKNOWN"]
+  },
+  token: {
+    name:"PRAXIS", symbol:"$PRX", network:"Solana", supply:"—", contract:"NOT YET DEPLOYED",
+    mint:"", // ← paste the SPL mint address here once deployed to enable live balance + market data
+    status:"NOT DEPLOYED",
+    // planned distribution — indicative, not final, subject to change before deployment
+    distribution:[
+      { k:"LIQUIDITY",       v:80, note:"paired at launch, locked" },
+      { k:"SYSTEM RESERVE",  v:10, note:"held by the organization" },
+      { k:"CONTINGENCY",     v:10, note:"undirected" },
+    ],
+    market:{ price:"DATA UNAVAILABLE", marketCap:"DATA UNAVAILABLE", circulating:"DATA UNAVAILABLE",
+             total:"DATA UNAVAILABLE", liquidity:"DATA UNAVAILABLE", holders:"DATA UNAVAILABLE", volume:"DATA UNAVAILABLE" }
+  },
+  manifesto: [
+    {no:"01", t:"BUILD",      d:"We build before we explain. Understanding is allowed to arrive late."},
+    {no:"02", t:"QUESTION",   d:"Every system carries assumptions. We look for the ones nobody wrote down."},
+    {no:"03", t:"EXPERIMENT", d:"Failure is data. A discontinued project is still telling us something."},
+    {no:"04", t:"OBSERVE",    d:"The system is always saying something. Most of the work is listening."},
+    {no:"05", t:"CONTINUE",   d:"Not every experiment has an ending. Some are simply left running."},
+  ],
+  logSeeds: [
+    ["SYSTEM INITIALIZED","ok"],["NETWORK CONNECTION ESTABLISHED","ok"],["NODE 07 CONNECTED","ok"],
+    ["PROJECT VECTOR STATE: PAUSED","warn"],["ARCHIVE SYNCHRONIZED","ok"],["SYSTEM STATUS: NORMAL","ok"],
+    ["CLEARANCE CHECK PASSED","ok"],["NODE 13 LATENCY NOMINAL",""],["PROJECT ECHO PERSISTENCE +0.4%",""],
+    ["UNKNOWN SIGNAL DETECTED","warn"],["SIGNAL LOST","alert"],["MIRROR RECURSION DEPTH: 9","warn"],
+    ["EXTERNAL ACCESS REQUEST — DENIED","alert"],["HOLLOW WRITE COMMITTED",""],["CARRIER FORWARD OK",""],
+    ["NODE 01 HEARTBEAT",""],["CORE TEMPERATURE STABLE",""],["OBSERVER 4 REPORTING",""],
+    ["PROJECT ORIGIN COORDINATION EVENT",""],["ARCHIVE INDEX REBUILD 12%",""],
+  ]
+};
+
+DATA.nav = DATA.nav; // (kept explicit for future config swap)
+
+/* =============================================================
+   UTIL
+   ============================================================= */
+const $  = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const el = (t,c,h)=>{ const n=document.createElement(t); if(c) n.className=c; if(h!=null) n.innerHTML=h; return n; };
+const pad = n => String(n).padStart(2,"0");
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function stamp(d=new Date()){
+  return `${d.getUTCFullYear()}.${pad(d.getUTCMonth()+1)}.${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} UTC`;
+}
+function ago(ms){
+  const s=Math.floor((Date.now()-ms)/1000);
+  const d=Math.floor(s/86400), h=Math.floor(s%86400/3600), m=Math.floor(s%3600/60);
+  if(d>0) return `${d}D ${h}H`;
+  if(h>0) return `${h}H ${m}M`;
+  return `${m}M ${s%60}S`;
+}
+let _raf = [];
+function loop(fn){ // register a rAF loop that survives route changes unless cleared
+  let on=true; const t={stop:()=>on=false};
+  (function step(){ if(!on) return; fn(); requestAnimationFrame(step); })();
+  _raf.push(t); return t;
+}
+function clearLoops(){ _raf.forEach(t=>t.stop()); _raf=[]; }
+let _intervals=[];
+function every(ms,fn){ const id=setInterval(fn,ms); _intervals.push(id); return id; }
+function clearEvery(){ _intervals.forEach(clearInterval); _intervals=[]; }
+
+let _toastT;
+function toast(msg){
+  const t=$("#toast"); if(!t) return;
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(_toastT); _toastT=setTimeout(()=>t.classList.remove("show"), 2800);
+}
+
+/* =============================================================
+   WALLET  —  multi-wallet connection (Solana)
+
+   Same pattern production dApps use (Solana Wallet Adapter /
+   Wallet Standard): the site announces itself, every installed
+   wallet registers itself, and the user picks one from an
+   in-page modal. The wallet's own extension shows the approval
+   prompt. PRAXIS only ever reads the public address — it never
+   sees a private key or recovery phrase and initiates no
+   transactions.
+   ============================================================= */
+
+/* Solana RPC endpoint for live balance lookups. Defaults to the free PublicNode
+   endpoint (CORS-enabled, no key). Swap for your own (Helius / QuickNode /
+   Alchemy) for production rate limits, or set "" to disable balance lookups. */
+const RPC_URL = "https://solana-rpc.publicnode.com";
+
+/* ---- Wallet Standard discovery (window event handshake) ---- */
+const WSTD = (()=>{
+  const found=new Set(); const subs=[];
+  const isSolana=w=>{
+    try{
+      if(Array.isArray(w.chains) && w.chains.some(c=>String(c).startsWith("solana:"))) return true;
+      if(w.features && Object.keys(w.features).some(f=>f.startsWith("solana:"))) return true;
+    }catch(e){}
+    return false;
+  };
+  const register=(...wallets)=>{
+    let changed=false;
+    for(const w of wallets){ if(w && !found.has(w) && isSolana(w)){ found.add(w); changed=true; } }
+    if(changed) subs.forEach(fn=>{ try{ fn(); }catch(e){} });
+  };
+  if(typeof window!=="undefined"){
+    const api=Object.freeze({ register });
+    try{ window.addEventListener("wallet-standard:register-wallet", e=>{ try{ e.detail(api); }catch(_){}}); }catch(e){}
+    try{ window.dispatchEvent(new CustomEvent("wallet-standard:app-ready",{ detail:api })); }catch(e){}
+  }
+  return { wallets:()=>[...found], onChange:fn=>{ subs.push(fn); } };
+})();
+
+/* ---- normalise a Wallet Standard wallet or a legacy provider ---- */
+function stdAdapter(w){
+  return {
+    kind:"standard", name:w.name, icon:w.icon||null, raw:w,
+    async connect(opts){
+      const res=await w.features["standard:connect"].connect(opts&&opts.silent?{silent:true}:undefined);
+      const acc=(res&&res.accounts&&res.accounts[0]) || (w.accounts&&w.accounts[0]);
+      return acc ? acc.address : null;
+    },
+    async disconnect(){ try{ await w.features["standard:disconnect"]?.disconnect?.(); }catch(e){} },
+    bind(on){
+      try{
+        w.features["standard:events"]?.on?.("change",props=>{
+          if(props && "accounts" in props){
+            const a=props.accounts && props.accounts[0];
+            on.change(a ? a.address : null);
+          }
+        });
+      }catch(e){}
+    }
+  };
+}
+function legacyAdapter(p,name){
+  return {
+    kind:"legacy", name, icon:null, raw:p,
+    async connect(opts){
+      const res=await p.connect(opts&&opts.silent?{onlyIfTrusted:true}:undefined);
+      const pk=(res&&res.publicKey)||p.publicKey;
+      return pk ? pk.toString() : null;
+    },
+    async disconnect(){ try{ await p.disconnect?.(); }catch(e){} },
+    bind(on){
+      try{
+        p.on?.("disconnect",()=>on.change(null));
+        p.on?.("accountChanged",pk=>on.change(pk?pk.toString():null));
+      }catch(e){}
+    }
+  };
+}
+
+/* ---- known wallets — shown as install options when absent ---- */
+const KNOWN_WALLETS=[
+  { name:"Phantom",         url:"https://phantom.app/download",              legacy:()=> (window.phantom&&window.phantom.solana&&window.phantom.solana.isPhantom) ? window.phantom.solana : null },
+  { name:"Solflare",        url:"https://solflare.com/download",             legacy:()=> (window.solflare&&window.solflare.isSolflare) ? window.solflare : null },
+  { name:"Backpack",        url:"https://backpack.app/downloads",            legacy:()=> (window.backpack&&window.backpack.isBackpack) ? window.backpack : null },
+  { name:"Coinbase Wallet", url:"https://www.coinbase.com/wallet/downloads", legacy:()=> window.coinbaseSolana || null },
+];
+
+function availableAdapters(){
+  const out=[]; const seen=new Set();
+  for(const w of WSTD.wallets()){
+    if(w.features && w.features["standard:connect"]){ out.push(stdAdapter(w)); seen.add(w.name.toLowerCase()); }
+  }
+  for(const k of KNOWN_WALLETS){
+    if(seen.has(k.name.toLowerCase())) continue;
+    const p=k.legacy();
+    if(p){ out.push(legacyAdapter(p,k.name)); seen.add(k.name.toLowerCase()); }
+  }
+  return out;
+}
+function missingWallets(){
+  const have=new Set(availableAdapters().map(a=>a.name.toLowerCase()));
+  return KNOWN_WALLETS.filter(k=>!have.has(k.name.toLowerCase()));
+}
+
+/* ---- connection state ---- */
+const WALLET = {
+  adapter:null, pubkey:null, name:null, balance:null, balanceState:"idle", onChange:null,
+  short(){ return this.pubkey ? this.pubkey.slice(0,4)+"…"+this.pubkey.slice(-4) : ""; },
+  solText(){
+    if(!this.pubkey) return "—";
+    if(this.balanceState==="ok") return this.balance;
+    if(this.balanceState==="loading") return "QUERYING…";
+    if(this.balanceState==="error") return "RPC UNAVAILABLE";
+    return "RPC NOT CONFIGURED";
+  },
+  async select(adapter){
+    try{
+      const addr=await adapter.connect();
+      if(!addr) return;
+      this._apply(adapter,addr);
+      try{ localStorage.setItem("praxis:wallet",adapter.name); }catch(e){}
+      closeWalletModal();
+      toast("CONNECTED · "+adapter.name.toUpperCase()+" · "+this.short());
+    }catch(err){
+      const rejected = err && (err.code===4001 || /reject|denied|cancel/i.test(err.message||""));
+      toast(rejected ? "CONNECTION REJECTED" : "CONNECTION FAILED");
+    }
+  },
+  _apply(adapter,addr){
+    this.adapter=adapter; this.name=adapter.name; this.pubkey=addr; this.balance=null;
+    adapter.bind({ change:a=>{ if(a){ this.pubkey=a; this.balance=null; fetchBalance(); } else { this._reset(); } renderWalletUI(); } });
+    renderWalletUI(); fetchBalance();
+  },
+  _reset(){ this.adapter=null; this.pubkey=null; this.name=null; this.balance=null; this.balanceState="idle"; try{ localStorage.removeItem("praxis:wallet"); }catch(e){} },
+  async disconnect(){
+    try{ await (this.adapter && this.adapter.disconnect()); }catch(e){}
+    this._reset(); toast("WALLET DISCONNECTED"); renderWalletUI();
+  },
+  async eager(){
+    let last=null; try{ last=localStorage.getItem("praxis:wallet"); }catch(e){}
+    if(!last) return;
+    const a=availableAdapters().find(x=>x.name===last);
+    if(!a) return;
+    try{ const addr=await a.connect({silent:true}); if(addr) this._apply(a,addr); }catch(e){}
+  }
+};
+
+async function fetchBalance(){
+  const who=WALLET.pubkey; if(!who) return;
+  if(!RPC_URL){ WALLET.balanceState="unconfigured"; renderWalletUI(); return; }
+  WALLET.balanceState="loading"; renderWalletUI();
+  try{
+    const r=await fetch(RPC_URL,{
+      method:"POST", headers:{"content-type":"application/json"},
+      body:JSON.stringify({ jsonrpc:"2.0", id:1, method:"getBalance", params:[who] })
+    });
+    const j=await r.json();
+    if(WALLET.pubkey!==who) return;
+    if(j && j.result && typeof j.result.value==="number"){
+      WALLET.balance=(j.result.value/1e9).toLocaleString("en-US",{maximumFractionDigits:4})+" SOL";
+      WALLET.balanceState="ok";
+    }else{ WALLET.balanceState="error"; }
+  }catch(e){ WALLET.balanceState="error"; }
+  renderWalletUI();
+}
+
+/* ---- $PRX market data via DexScreener (once a mint is configured) ---- */
+async function fetchMarket(){
+  const mint = DATA.token.mint;
+  if(!mint) return;
+  const usd = n => (n==null || isNaN(n)) ? null : "$"+Number(n).toLocaleString("en-US",{maximumFractionDigits: Number(n)<1?6:0});
+  const set = (label,val) => {
+    const cell=[...document.querySelectorAll("#boxDash .d")].find(c=>c.querySelector(".label").textContent===label);
+    if(cell && val!=null){ const dv=cell.querySelector(".dv"); dv.textContent=val; dv.classList.remove("na"); }
+  };
+  try{
+    const r=await fetch("https://api.dexscreener.com/latest/dex/tokens/"+encodeURIComponent(mint));
+    const j=await r.json();
+    const p=(j.pairs||[]).slice().sort((a,b)=>(b.liquidity&&b.liquidity.usd||0)-(a.liquidity&&a.liquidity.usd||0))[0];
+    if(!p) return;
+    set("PRICE", usd(p.priceUsd));
+    set("MARKET CAP", usd(p.fdv));
+    set("LIQUIDITY", usd(p.liquidity && p.liquidity.usd));
+    set("24H VOLUME", usd(p.volume && p.volume.h24));
+    const tag=document.querySelector(".chart-ph .cph-tag");
+    if(tag) tag.textContent = `$PRX / ${(p.quoteToken&&p.quoteToken.symbol)||"—"} · ${(p.dexId||"").toUpperCase()}`;
+    const mid=document.querySelector(".chart-ph .cph-mid");
+    if(mid) mid.textContent = "LIVE · DEXSCREENER";
+  }catch(e){ /* offline / not listed — keep placeholders */ }
+}
+
+/* ---- modal focus management (trap + restore) ---- */
+let _lastFocus=null;
+function trapFocus(e){
+  const open = $("#modal").classList.contains("open") ? $("#modal")
+             : $("#walletModal").classList.contains("open") ? $("#walletModal") : null;
+  if(!open || e.key!=="Tab") return;
+  const f=[...open.querySelectorAll('button,a[href],input,[tabindex]:not([tabindex="-1"])')].filter(x=>x.offsetParent!==null);
+  if(!f.length) return;
+  const first=f[0], last=f[f.length-1];
+  if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+}
+document.addEventListener("keydown", trapFocus);
+function afterModalOpen(panelSel, focusSel){
+  _lastFocus = document.activeElement;
+  const t = $(panelSel + " " + focusSel); if(t) setTimeout(()=>t.focus(), 30);
+}
+function afterModalClose(){
+  const anyOpen = $("#modal").classList.contains("open") || $("#walletModal").classList.contains("open");
+  if(anyOpen) return;
+  document.body.style.overflow="";
+  if(_lastFocus && _lastFocus.focus){ try{ _lastFocus.focus(); }catch(e){} _lastFocus=null; }
+}
+
+/* ---- wallet modal (picker + connected status) ---- */
+function openWalletModal(){ buildWalletModal(); $("#walletModal").classList.add("open"); document.body.style.overflow="hidden"; afterModalOpen("#walletModal",".wm-x"); }
+function closeWalletModal(){
+  $("#walletModal").classList.remove("open");
+  afterModalClose();
+}
+function iconFor(name){ return `<span class="wm-letter">${(name||"?")[0]}</span>`; }
+function buildWalletModal(){
+  const list=$("#wmList"), head=$("#wmHead"); if(!list) return;
+  list.innerHTML="";
+  if(WALLET.pubkey){
+    head.textContent="WALLET CONNECTED";
+    list.appendChild(el("div","wm-status",
+      `<div class="wm-row-main"><span class="wm-ic">${iconFor(WALLET.name)}</span>
+        <span style="min-width:0"><b>${WALLET.name}</b>
+        <span class="wm-addr">${WALLET.pubkey}</span></span></div>`));
+    const acts=el("div","wm-acts");
+    const copy=el("button","btn ghost","COPY");
+    copy.addEventListener("click",()=>{ try{ navigator.clipboard.writeText(WALLET.pubkey); }catch(e){} toast("ADDRESS COPIED"); });
+    const dc=el("button","btn","DISCONNECT");
+    dc.addEventListener("click",()=>{ WALLET.disconnect(); closeWalletModal(); });
+    acts.append(copy,dc); list.appendChild(acts);
+    return;
+  }
+  head.textContent="CONNECT A WALLET";
+  const avail=availableAdapters();
+  if(avail.length){
+    avail.forEach(a=>{
+      const row=el("button","wm-row",
+        `<span class="wm-row-main"><span class="wm-ic">${a.icon?`<img src="${a.icon}" alt="">`:iconFor(a.name)}</span>${a.name}</span>
+         <span class="wm-tag detected">DETECTED</span>`);
+      row.addEventListener("click",()=>WALLET.select(a));
+      list.appendChild(row);
+    });
+  }else{
+    list.appendChild(el("p","wm-empty","No Solana wallet detected in this browser. Install one below, then reload the page."));
+  }
+  missingWallets().forEach(k=>{
+    const row=el("a","wm-row",
+      `<span class="wm-row-main"><span class="wm-ic">${iconFor(k.name)}</span>${k.name}</span>
+       <span class="wm-tag">INSTALL ↗</span>`);
+    row.href=k.url; row.target="_blank"; row.rel="noopener";
+    list.appendChild(row);
+  });
+}
+
+function renderWalletUI(){
+  const b=$("#walletBtn");
+  if(b){
+    if(WALLET.pubkey){ b.classList.add("on"); b.textContent=WALLET.short(); b.title=WALLET.name+" — manage"; }
+    else { b.classList.remove("on"); b.textContent="CONNECT"; b.title="Connect a wallet"; }
+  }
+  if($("#walletModal") && $("#walletModal").classList.contains("open")) buildWalletModal();
+  if(typeof WALLET.onChange==="function") WALLET.onChange();
+}
+
+// refresh the picker as wallets register after initial load
+WSTD.onChange(()=>{ if($("#walletModal") && $("#walletModal").classList.contains("open")) buildWalletModal(); });
+
+/* live wallet readout beside the hero box (home only) */
+function renderHeroWallet(){
+  const host=$("#heroWallet"); if(!host) return;
+  if(!WALLET.pubkey){
+    host.className="hero-wallet disc";
+    host.innerHTML=`<span class="hw-k">WALLET</span><span class="hw-cta">CONNECT ▸</span>`;
+    host.onclick=openWalletModal;
+    return;
+  }
+  host.onclick=null;
+  host.className="hero-wallet";
+  const ok=WALLET.balanceState==="ok";
+  const big = ok ? WALLET.balance.replace(" SOL","")
+    : WALLET.balanceState==="loading" ? "· · · ·"
+    : WALLET.balanceState==="error" ? "RPC UNAVAILABLE"
+    : "—";
+  host.innerHTML=`
+    <div class="hw-bal">${ok?'<i></i>':''}<b>${big}</b><span>${ok?"SOL · LIVE":"SOL"}</span></div>
+    <div class="hw-row"><span class="hw-k">Wallet</span><span class="hw-v accent">${WALLET.name.toUpperCase()}</span></div>
+    <div class="hw-row"><span class="hw-k">Address</span><span class="hw-v">${WALLET.short()}</span></div>
+    <div class="hw-row"><span class="hw-k">$PRX</span><span class="hw-v">NOT DEPLOYED</span></div>`;
+}
+
+/* =============================================================
+   SCROLL CHOREOGRAPHY
+   reveal-on-enter, drawn hairlines, counting metrics,
+   masked headline rise, hero parallax, progress rail.
+   ============================================================= */
+const REVEAL = [
+  ".page-head .eyebrow", ".page-head h1", ".page-head .lede",
+  ".hero .eyebrow", ".hero .sub", ".phrases", ".hero-side",
+  ".split-head .eyebrow", ".split-head h2", ".split-head p",
+  ".metagrid", ".proj-row", ".manifesto-item", ".file-cell",
+  ".dash", ".dist-row", ".graphbox", ".proc-list", ".netbox", ".logbox",
+  ".term-panel", ".access-actions", ".chart-ph", ".box-mark", ".card",
+  ".wallet-wrap", ".rule", ".section-pad > p", ".section-pad > .label"
+].join(",");
+
+const ROW_LIKE  = new Set(["proj-row","manifesto-item","dist-row"]);
+const PANEL_LIKE= new Set(["graphbox","netbox","logbox","term-panel","chart-ph","proc-list","file-cell"]);
+
+/* A queue + scroll sweep rather than IntersectionObserver: a fast fling or a
+   jump to an anchor can carry an element across the viewport between two IO
+   samples, and it would then stay invisible forever. The sweep reveals
+   anything at or above the trigger line, so nothing can be stranded. */
+let _revealQ=[], _countQ=[];
+
+function initReveal(root){
+  _revealQ=[];
+  if(reduceMotion) return;
+  const picked=[];
+  [...root.querySelectorAll(REVEAL)].forEach(n=>{
+    if(picked.some(p=>p.contains(n))) return;          // never nest reveals
+    picked.push(n);
+  });
+  const perParent=new Map();
+  picked.forEach(n=>{
+    const p=n.parentElement;
+    const i=perParent.get(p)||0; perParent.set(p,i+1);
+    const cls=[...n.classList];
+    const heading = n.matches(".page-head h1, .split-head h2");
+    const kind = heading ? "mask"
+               : n.classList.contains("rule") ? "rule"
+               : cls.some(c=>ROW_LIKE.has(c))  ? "row"
+               : cls.some(c=>PANEL_LIKE.has(c))? "panel" : "";
+    if(heading) splitWords(n, 60);
+    n.setAttribute("data-reveal", kind);
+    n.style.setProperty("--d", Math.min(i,9)*55 + "ms");
+    _revealQ.push(n);
+  });
+}
+
+/* metrics count up the first time they scroll into view */
+function initCounters(root){
+  _countQ=[];
+  if(reduceMotion) return;
+  [...root.querySelectorAll(".metagrid .val, .dash .dv")].forEach(n=>{
+    if(n.id) return;                                   // skip live-updating cells
+    const raw=n.textContent.trim();
+    if(!/^\d{1,3}(,\d{3})*$|^\d+$/.test(raw)) return;
+    n.dataset.countTo = raw.replace(/,/g,"");
+    n.dataset.countPad = /^0\d/.test(raw) ? "1" : "0";
+    _countQ.push(n);
+  });
+}
+function runCount(node){
+  const target=+node.dataset.countTo, pad0=node.dataset.countPad==="1";
+  const final = pad0 ? String(target).padStart(2,"0") : target.toLocaleString("en-US");
+  const t0=performance.now(), dur=1000;
+  let done=false, killed=false;
+  // the true value stays on screen until the first frame runs, and the timer
+  // below force-lands it — otherwise throttled frames leave a metric cell
+  // showing a bogus mid-animation number
+  const step=t=>{
+    if(killed) return;
+    const p=Math.min(1,(t-t0)/dur);
+    const v=Math.round(target*(1-Math.pow(1-p,3)));
+    node.textContent = pad0 ? String(v).padStart(2,"0") : v.toLocaleString("en-US");
+    if(p<1) requestAnimationFrame(step); else done=true;
+  };
+  requestAnimationFrame(step);
+  setTimeout(()=>{ if(!done){ killed=true; node.textContent=final; } }, dur+400);
+}
+
+function sweep(){
+  const vh=window.innerHeight;
+  if(_revealQ.length){
+    const rest=[];
+    for(const n of _revealQ){
+      if(n.getBoundingClientRect().top < vh*0.94) n.classList.add("is-in");
+      else rest.push(n);
+    }
+    _revealQ=rest;
+  }
+  if(_countQ.length){
+    const rest=[];
+    for(const n of _countQ){
+      const r=n.getBoundingClientRect();
+      if(r.top < vh*0.88) runCount(n); else rest.push(n);
+    }
+    _countQ=rest;
+  }
+}
+
+/* headings arrive word by word from behind a mask */
+function splitWords(h, base){
+  if(!h || h.dataset.split) return;
+  h.dataset.split="1";
+  h.classList.add("mask-rise");
+  if(reduceMotion){ h.classList.add("is-in"); return; }
+  const words=h.textContent.trim().split(/\s+/);
+  h.innerHTML=words.map((w,i)=>
+    `<span class="hw"><span style="--d:${base+i*70}ms">${w}</span></span>`).join(" ");
+}
+function splitHeadline(){
+  const h=document.querySelector(".hero h1");
+  if(!h || h.dataset.split) return;
+  splitWords(h, 80);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>h.classList.add("is-in")));
+}
+
+/* record titles resolve out of noise, like a decrypt */
+const _SCRAM="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&/*<>";
+function decode(node, dur){
+  if(!node) return;
+  const final=node.textContent;
+  if(reduceMotion || !final.trim()) return;
+  dur = dur || 420;
+  const t0=performance.now();
+  let landed=false;
+  const tick=t=>{
+    if(landed) return;
+    const p=Math.min(1,(t-t0)/dur);
+    const lock=Math.floor(final.length*p);
+    let out="";
+    for(let i=0;i<final.length;i++){
+      const c=final[i];
+      out += (i<lock || c===" ") ? c : _SCRAM[(Math.random()*_SCRAM.length)|0];
+    }
+    node.textContent=out;
+    if(p<1) requestAnimationFrame(tick); else { landed=true; node.textContent=final; }
+  };
+  requestAnimationFrame(tick);
+  // never leave scrambled text on screen if frames stall
+  setTimeout(()=>{ landed=true; node.textContent=final; }, dur+300);
+}
+
+/* progress rail + hero parallax */
+let _sTick=false;
+function onScroll(){
+  if(_sTick) return; _sTick=true;
+  requestAnimationFrame(()=>{
+    _sTick=false;
+    const y=window.scrollY||window.pageYOffset||0;
+    const max=Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const bar=$("#scrollbar"); if(bar) bar.style.width=(Math.min(1,y/max)*100).toFixed(2)+"%";
+    sweep();
+    if(reduceMotion) return;
+    const vis=$(".hero-visual");
+    if(vis) vis.style.transform=`translate3d(0,${Math.min(y*0.14,90).toFixed(1)}px,0)`;
+    document.body.style.setProperty("--gy", ((y*0.08) % 64).toFixed(1)+"px");
+  });
+}
+window.addEventListener("scroll", onScroll, {passive:true});
+window.addEventListener("resize", onScroll, {passive:true});
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden) return;
+  _sTick=false;            // a frame deferred while hidden must not latch the handler off
+  sweep(); onScroll();
+});
+
+/* =============================================================
+   NAV RENDER
+   ============================================================= */
+function buildNav(){
+  const nav = $("#primaryNav");
+  nav.innerHTML="";
+  DATA.nav.forEach(i=>{
+    const a=el("a",null,i.label); a.href=i.href; a.dataset.route=i.href; nav.appendChild(a);
+  });
+  const tok=el("a","tok","$PRX"); tok.href="#/prx"; tok.dataset.route="#/prx"; nav.appendChild(tok);
+
+  const m=$("#mobileNav"); m.innerHTML="";
+  [...DATA.nav, {label:"$PRX",href:"#/prx"}].forEach((i,idx)=>{
+    const a=el("a",null,`<span>${i.label}</span><span class="idx">${pad(idx+1)}</span>`);
+    a.href=i.href; a.addEventListener("click",()=>toggleMobile(false)); m.appendChild(a);
+  });
+}
+function toggleMobile(force){
+  const m=$("#mobileNav");
+  const open = force!=null ? force : !m.classList.contains("open");
+  m.classList.toggle("open",open);
+  const mb=$("#menuBtn"); if(mb){ mb.setAttribute("aria-expanded", String(open)); mb.setAttribute("aria-label", open?"Close menu":"Open menu"); }
+  document.body.style.overflow = open ? "hidden" : "";
+}
+function markActive(route){
+  $$("#primaryNav a").forEach(a=>a.classList.toggle("active", a.dataset.route===route));
+}
+
+/* =============================================================
+   ROUTER
+   ============================================================= */
+const routes = {
+  "#/":         viewHome,
+  "#/system":   viewSystem,
+  "#/projects": viewProjects,
+  "#/files":    viewFiles,
+  "#/network":  viewNetwork,
+  "#/access":   viewAccess,
+  "#/logs":     viewLogs,
+  "#/about":    viewAbout,
+  "#/prx":      viewBox,
+};
+
+function router(){
+  const hash = location.hash || "#/";
+  const key = Object.keys(routes).find(r=> r===hash || (r!=="#/" && hash.startsWith(r)) ) || "#/";
+  clearLoops(); clearEvery();
+  closeModal(); toggleMobile(false);
+  WALLET.onChange=null;
+  const app = $("#app");
+  app.innerHTML="";
+  routes[key](app);
+  markActive(key==="#/" ? null : key);
+  window.scrollTo(0,0);
+  splitHeadline();
+  initReveal(app);
+  initCounters(app);
+  // paint the hidden state once, then let the first sweep cascade it in.
+  // the timer is a fallback: rAF is throttled in a background tab, and without
+  // it above-the-fold content would sit invisible until the user scrolled.
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ sweep(); onScroll(); }));
+  setTimeout(()=>{ sweep(); onScroll(); }, 140);
+  document.title = (key==="#/" ? "PRAXIS" : titleFor(key)) + " — WE BUILD THINGS WE CAN'T EXPLAIN.";
+  if(_routed){ const h=app.querySelector("h1"); if(h){ h.setAttribute("tabindex","-1"); h.focus({preventScroll:true}); } }
+  _routed = true;
+}
+let _routed = false;
+function titleFor(key){ return "PRAXIS " + key.replace("#/","").toUpperCase(); }
+window.addEventListener("hashchange", router);
+
+/* =============================================================
+   VIEW: HOME
+   ============================================================= */
+function viewHome(app){
+  const sec = el("section");
+  sec.innerHTML = `
+   <div class="wrap hero">
+     <div class="hero-grid">
+       <div>
+         <div class="eyebrow"><span class="label">INDEPENDENT TECHNOLOGY ORGANIZATION</span></div>
+         <h1>WE BUILD THINGS WE CAN'T EXPLAIN.</h1>
+         <p class="sub">PRAXIS is an independent technology organization exploring systems, machines and protocols that exist somewhere between known and unknown.</p>
+         <div class="phrases">
+           <span>THE SYSTEM IS ONLINE</span><span>CLASSIFIED BY DESIGN</span>
+           <span>NOT EVERYTHING NEEDS AN ANSWER</span><span>ACCESS IS MONITORED</span>
+         </div>
+       </div>
+       <div class="hero-side">
+         <div class="hero-visual">
+           <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+           <canvas id="heroCanvas" aria-hidden="true"></canvas>
+           <div class="vlabel"><span class="label">PRX-CORE</span><span class="label" id="heroTick">—</span></div>
+         </div>
+         <div class="hero-wallet" id="heroWallet"></div>
+       </div>
+     </div>
+   </div>
+
+   <div class="wrap"><div class="rule"></div></div>
+
+   <div class="wrap section-pad">
+     <div class="metagrid" id="homeMeta"></div>
+   </div>
+
+   <div class="wrap"><div class="rule"></div></div>
+
+   <div class="wrap section-pad">
+     <div class="split-head">
+       <div><div class="eyebrow"><span class="label">07 / ACTIVE</span></div><h2>Projects</h2></div>
+       <p>Not every experiment reaches production. Some appear to have been abandoned. Some may not officially exist.</p>
+     </div>
+     <div class="proj-list" id="homeProjects"></div>
+     <div style="margin-top:34px"><a class="btn ghost" href="#/projects">ALL PROJECTS <span class="ar">▸</span></a></div>
+   </div>
+
+   <div class="wrap"><div class="rule"></div></div>
+
+   <div class="wrap section-pad">
+     <div class="split-head">
+       <div><div class="eyebrow"><span class="label">MANIFESTO</span></div><h2>How the organization operates.</h2></div>
+     </div>
+     <div id="homeManifesto"></div>
+   </div>
+
+   <div class="wrap"><div class="rule"></div></div>
+
+   <div class="wrap section-pad">
+     <div class="box-hero">
+       <div>
+         <div class="eyebrow"><span class="label">DIGITAL ASSET</span></div>
+         <h2 style="font-size:clamp(26px,4vw,44px)">$PRX</h2>
+         <p class="dim" style="margin-top:18px;max-width:46ch">$PRX is the native digital asset associated with the PRAXIS network and its ecosystem. The company comes first. The asset is part of it.</p>
+         <div style="margin-top:26px"><a class="btn" href="#/prx">OPEN $PRX INTERFACE <span class="ar">▸</span></a></div>
+       </div>
+       <div class="box-mark">${praxisMark()}</div>
+     </div>
+   </div>
+  `;
+  app.appendChild(sec);
+
+  // meta grid
+  const s=DATA.system;
+  metaCells($("#homeMeta"), [
+    ["SYSTEM STATUS", s.status, true],
+    ["LOCATION", s.location],
+    ["CLASSIFICATION", s.classification],
+    ["ACTIVE PROJECTS", pad(DATA.projects.length)],
+    ["NETWORK", s.network, true],
+    ["LAST UPDATE", stamp(), false, "lastUpd"],
+  ]);
+  every(1000, ()=>{ const c=$("#lastUpd"); if(c) c.textContent=stamp(); });
+
+  // projects preview
+  const pl=$("#homeProjects");
+  DATA.projects.slice(0,5).forEach(p=>pl.appendChild(projRow(p)));
+
+  // manifesto
+  const mm=$("#homeManifesto");
+  DATA.manifesto.forEach(m=>{
+    mm.appendChild(el("div","manifesto-item",
+      `<div class="mno">${m.no}</div><div><h3>${m.t}</h3><p>${m.d}</p></div>`));
+  });
+
+  heroAnimation();
+
+  renderHeroWallet();
+  WALLET.onChange = renderHeroWallet;
+  if(WALLET.pubkey) fetchBalance();
+  every(25000, ()=>{ if(WALLET.pubkey) fetchBalance(); });   // keep the balance live
+}
+
+function metaCells(host, rows){
+  host.innerHTML="";
+  rows.forEach(([k,v,ok,id])=>{
+    const c=el("div","cell",`<span class="label">${k}</span><span class="val ${ok?'ok':''}" ${id?`id="${id}"`:''}>${v}</span>`);
+    host.appendChild(c);
+  });
+}
+function projStatus(p){
+  // PROJECT 002 / NULL is not consistently observable
+  if(p.id==="002") return (Math.floor(Date.now()/6000)%4===0) ? "OBSERVED" : "UNKNOWN";
+  return p.status;
+}
+function projRow(p){
+  const r=el("div","proj-row");
+  const st=projStatus(p);
+  r.innerHTML=`
+    <span class="pid">PROJECT ${p.id}</span>
+    <span class="pname">${p.name}</span>
+    <span class="pdesc">${p.description}</span>
+    <span class="pmeta"><span class="badge ${st.toLowerCase()}">${st}</span><span class="badge ${p.classification.toLowerCase()}">${p.classification}</span></span>`;
+  r.addEventListener("click",()=>openProject(p.id));
+  return r;
+}
+
+/* =============================================================
+   VIEW: SYSTEM
+   ============================================================= */
+function viewSystem(app){
+  const s=DATA.system;
+  const sec=el("section");
+  sec.innerHTML=`
+   <div class="wrap page-head">
+     <div class="eyebrow"><span class="label">SYSTEM</span></div>
+     <h1>System Status</h1>
+     <p class="lede">A live overview of the PRAXIS environment. Values reflect internal system state and are specific to the PRAXIS universe.</p>
+   </div>
+   <div class="wrap section-pad" style="padding-top:clamp(40px,6vw,64px)">
+     <div class="metagrid" id="sysMeta"></div>
+
+     <div class="graphbox">
+       <div class="gtop"><span class="label">CORE ACTIVITY / 90S WINDOW</span><span class="label" id="sysNow">—</span></div>
+       <canvas id="sysCanvas" aria-hidden="true"></canvas>
+     </div>
+
+     <div class="proc-list">
+       <div class="ph"><span class="label">PID</span><span class="label">PROCESS</span><span class="label">CLASS</span><span class="label">STATE</span></div>
+       <div id="procRows"></div>
+     </div>
+     <p class="label" style="margin-top:18px;letter-spacing:.14em">03 UNKNOWN PROCESSES ARE RUNNING. THIS IS EXPECTED.</p>
+   </div>`;
+  app.appendChild(sec);
+
+  metaCells($("#sysMeta"), [
+    ["SYSTEM STATUS", s.status, true],
+    ["CORE", s.core, true],
+    ["NETWORK", s.network, true],
+    ["SECURITY", s.security, true],
+    ["EXTERNAL ACCESS", s.externalAccess],
+    ["ACTIVE PROCESSES", s.activeProcesses],
+    ["UNKNOWN PROCESSES", pad(s.unknownProcesses)],
+    ["LAST SYSTEM EVENT", "—", false, "sysEvent"],
+  ]);
+
+  const procs=[
+    ["0x01","core.scheduler","SYSTEM","RUN"],["0x07","net.router","SYSTEM","RUN"],
+    ["0x0c","archive.index","SYSTEM","RUN"],["0x11","origin.coord","RESTRICTED","RUN"],
+    ["0x14","mirror.observer","RESTRICTED","RUN"],["0x1a","echo.persist","RESTRICTED","RUN"],
+    ["0x1f","carrier.forward","CONFIDENTIAL","RUN"],["0x2b","hollow.write","RESTRICTED","RUN"],
+    ["0x33","—","UNKNOWN","RUN"],["0x34","—","UNKNOWN","RUN"],["0x35","—","UNKNOWN","WAIT"],
+  ];
+  const pr=$("#procRows");
+  procs.forEach(([a,b,c,d])=>pr.appendChild(el("div","pr",
+    `<span>${a}</span><span class="nm">${b}</span><span>${c}</span><span>${d}</span>`)));
+
+  const events=["ARCHIVE SYNCHRONIZED","NODE 07 HEARTBEAT","CLEARANCE CHECK PASSED","UNKNOWN PROCESS SPAWNED","CORE TEMPERATURE STABLE","EXTERNAL REQUEST DENIED"];
+  let ei=0;
+  const setEv=()=>{ const c=$("#sysEvent"); if(c) c.textContent = events[ei++%events.length]; };
+  setEv(); every(4200,setEv);
+  every(1000,()=>{ const c=$("#sysNow"); if(c) c.textContent=stamp(); });
+
+  activityGraph($("#sysCanvas"));
+}
+
+/* =============================================================
+   VIEW: PROJECTS
+   ============================================================= */
+function viewProjects(app){
+  const sec=el("section");
+  sec.innerHTML=`
+   <div class="wrap page-head">
+     <div class="eyebrow"><span class="label">PROJECTS</span></div>
+     <h1>Projects</h1>
+     <p class="lede">Not every experiment reaches production. Select a project for available documentation.</p>
+   </div>
+   <div class="wrap section-pad" style="padding-top:clamp(36px,5vw,56px)">
+     <div class="proj-list" id="allProjects"></div>
+   </div>`;
+  app.appendChild(sec);
+  const pl=$("#allProjects");
+  DATA.projects.forEach(p=>pl.appendChild(projRow(p)));
+}
+
+function openProject(id){
+  const p=DATA.projects.find(x=>x.id===id); if(!p) return;
+  $("#modalTag").textContent = `PROJECT ${p.id}`;
+  const b=$("#modalBody");
+  b.innerHTML=`
+    <h2>${p.name}</h2>
+    <p class="dim">${p.description}</p>
+    <dl class="kv">
+      <dt>Project ID</dt><dd>PRX-P${p.id}</dd>
+      <dt>Status</dt><dd>${p.status}</dd>
+      <dt>Classification</dt><dd>${p.classification}</dd>
+      <dt>Created</dt><dd>${p.created}</dd>
+      <dt>Last Update</dt><dd>${p.updated==="live"?stamp():p.updated}</dd>
+      <dt>Team</dt><dd>${p.team}</dd>
+    </dl>
+    <div class="eyebrow" style="margin:26px 0 10px"><span class="label">SYSTEM NOTES</span></div>
+    <p class="dim" style="font-size:14px">${p.notes}</p>
+    <div class="eyebrow" style="margin:26px 0 4px"><span class="label">DOCUMENTS</span></div>
+    <div id="mdocs"></div>`;
+  const md=$("#mdocs");
+  p.docs.forEach(d=>{
+    const row=el("div","doc-row"+(d.locked?" locked":""),
+      `<span>${d.n}</span><span>${d.locked?"◼ LOCKED":"▸ OPEN"}</span>`);
+    if(d.locked) row.addEventListener("click",()=>denied());
+    md.appendChild(row);
+  });
+  openModal();
+}
+
+/* =============================================================
+   VIEW: FILES
+   ============================================================= */
+function viewFiles(app){
+  const sec=el("section");
+  sec.innerHTML=`
+   <div class="wrap page-head">
+     <div class="eyebrow"><span class="label">PRAXIS FILES</span></div>
+     <h1>Files</h1>
+     <p class="lede">The organization's archive. Access level varies by document. Classified records return an access-denied interface.</p>
+   </div>
+   <div class="wrap section-pad" style="padding-top:clamp(36px,5vw,56px)">
+     <div class="file-grid" id="fileGrid"></div>
+   </div>`;
+  app.appendChild(sec);
+  const g=$("#fileGrid");
+  DATA.files.filter(f=>!f.hidden || unlockedPRX000).forEach(f=>{
+    const c=el("div","file-cell");
+    c.innerHTML=`
+      <div><span class="fid">${f.id}</span><div class="ftitle">${f.title}</div></div>
+      <div class="fbot"><span class="fdate">${f.date}</span><span class="badge ${f.classification.toLowerCase()}">${f.classification}</span></div>`;
+    c.addEventListener("click",()=>openFile(f.id));
+    g.appendChild(c);
+  });
+}
+let unlockedPRX000=false;
+
+function openFile(id){
+  const f=DATA.files.find(x=>x.id===id); if(!f) return;
+  const open = f.classification==="PUBLIC" || (f.id==="PRX-000" && unlockedPRX000);
+  if(!open){ denied(f); return; }
+  $("#modalTag").textContent=f.id;
+  $("#modalBody").innerHTML=`
+    <h2>${f.title}</h2>
+    <dl class="kv">
+      <dt>File ID</dt><dd>${f.id}</dd>
+      <dt>Date</dt><dd>${f.date}</dd>
+      <dt>Classification</dt><dd>${f.classification}</dd>
+      <dt>Status</dt><dd>${f.status}</dd>
+    </dl>
+    <div class="eyebrow" style="margin:24px 0 12px"><span class="label">DOCUMENT</span></div>
+    <p class="dim" style="font-size:14.5px;line-height:1.8">${f.body||"—"}</p>`;
+  openModal();
+}
+function denied(ref){
+  $("#modalTag").textContent = ref? ref.id : "ACCESS";
+  const lvl = ref && ref.classification==="CLASSIFIED" ? "05" : "03";
+  $("#modalBody").innerHTML=`
+    <div class="denied">
+      <div class="dbox"></div>
+      <h2>ACCESS DENIED.</h2>
+      <p>This document requires a higher clearance level.<br>Your session is operating at ACCESS LEVEL: PUBLIC.</p>
+      <div class="clr">REQUIRED CLEARANCE LEVEL: ${lvl}</div>
+    </div>`;
+  openModal();
+}
+
+/* =============================================================
+   VIEW: NETWORK
+   ============================================================= */
+function viewNetwork(app){
+  const n=DATA.network;
+  const sec=el("section");
+  sec.innerHTML=`
+   <div class="wrap page-head">
+     <div class="eyebrow"><span class="label">NETWORK</span></div>
+     <h1>Network</h1>
+     <p class="lede">Infrastructure overview for the PRAXIS ecosystem. Metrics are internal system values, not real-world measurements.</p>
+   </div>
+   <div class="wrap section-pad" style="padding-top:clamp(36px,5vw,56px)">
+     <div class="metagrid" id="netMeta"></div>
+     <div class="netbox">
+       <div class="nlabel"><span class="label">INFRASTRUCTURE MAP / LIVE</span></div>
+       <canvas id="netCanvas" aria-hidden="true"></canvas>
+       <div class="nlegend">
+         <span>● CORE</span><span>● NODE</span><span>● ARCHIVE</span><span>● UNKNOWN</span>
+       </div>
+     </div>
+   </div>`;
+  app.appendChild(sec);
+  metaCells($("#netMeta"),[
+    ["NETWORK STATUS", n.status, true],
+    ["ACTIVE NODES", n.activeNodes.toLocaleString('en-US')],
+    ["CONNECTED SYSTEMS", n.connectedSystems],
+    ["NETWORK AGE", ago(DATA.system.epoch), false, "netAge"],
+    ["LAST SIGNAL", "—", false, "netSig"],
+    ["EXTERNAL LINKS", "MONITORED"],
+  ]);
+  every(1000,()=>{ const a=$("#netAge"); if(a) a.textContent=ago(DATA.system.epoch); });
+  const sigs=["NODE 07","NODE 13","ARCHIVE","UNKNOWN","CORE","REMOTE"];
+  const setSig=()=>{ const c=$("#netSig"); if(c) c.textContent = sigs[Math.floor(Math.random()*sigs.length)] + " · " + pad(Math.floor(Math.random()*60)) + "S AGO"; };
+  setSig(); every(3000,setSig);
+  networkGraph($("#netCanvas"));
+}
+
+/* =============================================================
+   VIEW: ACCESS
+   ============================================================= */
+function viewAccess(app){
+  const sec=el("section");
+  sec.innerHTML=`
+   <div class="wrap page-head">
+     <div class="eyebrow"><span class="label">ACCESS</span></div>
+     <h1>Access The System.</h1>
+     <p class="lede">This interface provides public-level entry to the PRAXIS environment. No credentials, private keys or recovery phrases are requested or accepted.</p>
+   </div>
+   <div class="wrap section-pad" style="padding-top:clamp(36px,5vw,56px)">
+     <div class="term-panel">
+       <div class="tbar"><i></i><i></i><i></i><span class="tt">PRAXIS // ACCESS TERMINAL</span></div>
+       <div class="tbody">
+         <div><span class="k">SYSTEM ID ........... </span><span class="v">PRAXIS</span></div>
+         <div><span class="k">ACCESS LEVEL ........ </span><span class="v" id="axLevel">PUBLIC</span></div>
+         <div><span class="k">NETWORK ............. </span><span class="v">CONNECTED</span></div>
+         <div><span class="k">SESSION ............ </span><span class="v" id="axSession">—</span></div>
+         <div><span class="k">WALLET ............. </span><span class="v" id="axWallet">DISCONNECTED</span></div>
+         <div><span class="k">MONITORING ......... </span><span class="v">ACTIVE</span></div>
+       </div>
+     </div>
+     <div class="access-actions">
+       <a class="btn" href="#/system">ENTER SYSTEM <span class="ar">▸</span></a>
+       <a class="btn ghost" href="#/files">VIEW FILES</a>
+       <a class="btn ghost" href="#/network">VIEW NETWORK</a>
+       <a class="btn ghost" href="#/projects">VIEW PROJECTS</a>
+     </div>
+
+     <div class="rule" style="margin:48px 0"></div>
+
+     <div class="eyebrow"><span class="label">WALLET ACCESS — OPTIONAL</span></div>
+     <div class="wallet-wrap">
+       <div>
+         <h2 style="font-size:clamp(20px,3vw,30px)">Connect a Solana wallet.</h2>
+         <p class="dim" style="margin-top:14px;font-size:14px;line-height:1.8">
+           Any Solana wallet works — Phantom, Solflare, Backpack. Choosing one opens that wallet's
+           own approval screen. PRAXIS reads your public address only: it never receives your
+           private key or recovery phrase, cannot move funds, and cannot sign anything without a
+           separate prompt from your wallet. Disconnect at any time.
+         </p>
+         <div id="walletCtl" style="margin-top:22px"></div>
+       </div>
+       <div class="term-panel" style="margin:0">
+         <div class="tbar"><i></i><i></i><i></i><span class="tt">WALLET</span></div>
+         <div class="tbody">
+           <div><span class="k">PROVIDER ....... </span><span class="v" id="wpProvider">—</span></div>
+           <div><span class="k">STATUS ........ </span><span class="v" id="wpStatus">DISCONNECTED</span></div>
+           <div><span class="k">ADDRESS ....... </span><span class="v" id="wpAddr" style="word-break:break-all">—</span></div>
+           <div><span class="k">SOL BALANCE ... </span><span class="v" id="wpSol">—</span></div>
+           <div><span class="k">$PRX BALANCE .. </span><span class="v" id="wpBox">—</span></div>
+         </div>
+       </div>
+     </div>
+
+     <div class="rule" style="margin:44px 0"></div>
+     <div style="display:flex;flex-wrap:wrap;gap:14px 26px;align-items:baseline;justify-content:space-between">
+       <p class="label" style="letter-spacing:.14em;line-height:2">
+         ACCESS IS MONITORED · SOME THINGS ARE BETTER LEFT UNEXPLAINED
+       </p>
+       <a class="label" style="letter-spacing:.14em;color:var(--silver);border:1px solid var(--line);padding:9px 13px"
+          href="${DATA.channel.href}" target="_blank" rel="noopener">MONITORED CHANNEL · ${DATA.channel.label} ↗</a>
+     </div>
+   </div>`;
+  app.appendChild(sec);
+  $("#axSession").textContent = "PRX-" + Math.random().toString(16).slice(2,8).toUpperCase();
+
+  const paint=()=>{
+    const on=!!WALLET.pubkey;
+    $("#axLevel").textContent   = on ? "AUTHENTICATED" : "PUBLIC";
+    $("#axWallet").textContent  = on ? WALLET.short() : "DISCONNECTED";
+    $("#wpProvider").textContent= on ? WALLET.name.toUpperCase() : "—";
+    $("#wpStatus").textContent  = on ? "CONNECTED" : "DISCONNECTED";
+    $("#wpAddr").textContent    = on ? WALLET.pubkey : "—";
+    $("#wpSol").textContent     = WALLET.solText();
+    $("#wpBox").textContent     = on ? "UNAVAILABLE — $PRX NOT DEPLOYED" : "—";
+    const ctl=$("#walletCtl"); ctl.innerHTML="";
+    const btn=el("button","btn", on ? "MANAGE WALLET" : 'CONNECT WALLET <span class="ar">▸</span>');
+    btn.addEventListener("click", openWalletModal);
+    ctl.appendChild(btn);
+    const names=availableAdapters().map(a=>a.name.toUpperCase()).join(" · ");
+    const hint=el("p","label", names
+      ? ("DETECTED · "+names)
+      : 'NO WALLET DETECTED · <a style="color:var(--silver);text-decoration:underline" href="https://phantom.app/download" target="_blank" rel="noopener">INSTALL ONE</a>');
+    hint.style.cssText="margin-top:14px;letter-spacing:.12em;line-height:1.8";
+    ctl.appendChild(hint);
+  };
+  WALLET.onChange = paint;
+  paint();
+}
+
+/* =============================================================
+   VIEW: LOGS
+   ============================================================= */
+function viewLogs(app){
+  const sec=el("section");
+  sec.innerHTML=`
+   <div class="wrap page-head">
+     <div class="eyebrow"><span class="label">LOGS</span></div>
+     <h1>System Logs</h1>
+     <p class="lede">A continuous view of internal system events. The stream updates as events occur.</p>
+   </div>
+   <div class="wrap section-pad" style="padding-top:clamp(36px,5vw,56px)">
+     <div class="logbox">
+       <div class="lbar"><span class="label">LIVE EVENT STREAM</span><span class="label" id="logClock">—</span></div>
+       <div class="logstream" id="logStream"></div>
+     </div>
+   </div>`;
+  app.appendChild(sec);
+
+  const stream=$("#logStream");
+  const addLine=(msg,cls)=>{
+    const d=new Date();
+    const ln=el("div","ln "+(cls||""),
+      `<span class="ts">[${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}]</span><span class="msg">${msg}</span>`);
+    stream.appendChild(ln);
+    while(stream.children.length>120) stream.removeChild(stream.firstChild);
+    stream.scrollTop=stream.scrollHeight;
+  };
+  // seed backlog
+  DATA.logSeeds.forEach(([m,c])=>addLine(m,c));
+  addLine("STREAM ATTACHED","ok");
+  every(1000,()=>{ const c=$("#logClock"); if(c) c.textContent=stamp(); });
+  every(2600,()=>{
+    const [m,c]=DATA.logSeeds[Math.floor(Math.random()*DATA.logSeeds.length)];
+    addLine(m,c);
+  });
+}
+
+/* =============================================================
+   VIEW: ABOUT
+   ============================================================= */
+function viewAbout(app){
+  const sec=el("section");
+  sec.innerHTML=`
+   <div class="wrap page-head">
+     <div class="eyebrow"><span class="label">ABOUT</span></div>
+     <h1>The most important technologies<br>are often the ones we don't yet understand.</h1>
+   </div>
+   <div class="wrap section-pad" style="padding-top:clamp(40px,6vw,72px);max-width:820px">
+     <p class="label" style="margin-bottom:34px;letter-spacing:.16em;line-height:1.9">
+       PRAXIS &nbsp;/ˈprak.sɪs/ &nbsp;·&nbsp; THE PROCESS BY WHICH THEORY BECOMES PRACTICE.
+     </p>
+     <p class="dim" style="font-size:clamp(16px,2.2vw,20px);line-height:1.7">
+       PRAXIS was created around a simple idea: a system can be built, deployed and relied upon
+       before anyone can fully explain how it behaves — provided it is observed continuously and its
+       access is monitored.
+     </p>
+     <p class="dim" style="margin-top:24px;font-size:15.5px;line-height:1.8">
+       The organization explores experimental systems, digital infrastructure, autonomous networks,
+       cryptographic coordination, and new forms of digital ownership. Some of this work is public.
+       Some is restricted. Some is classified by design.
+     </p>
+     <p class="dim" style="margin-top:24px;font-size:15.5px;line-height:1.8">
+       PRAXIS reveals only part of itself. This is deliberate. Not everything needs an answer.
+     </p>
+     <div class="rule" style="margin:56px 0"></div>
+     <div class="eyebrow"><span class="label">MANIFESTO</span></div>
+     <div id="aboutManifesto"></div>
+   </div>`;
+  app.appendChild(sec);
+  const mm=$("#aboutManifesto");
+  DATA.manifesto.forEach(m=>mm.appendChild(el("div","manifesto-item",
+    `<div class="mno">${m.no}</div><div><h3>${m.t}</h3><p>${m.d}</p></div>`)));
+}
+
+/* =============================================================
+   VIEW: $PRX
+   ============================================================= */
+function viewBox(app){
+  const t=DATA.token;
+  const sec=el("section");
+  sec.innerHTML=`
+   <div class="wrap page-head">
+     <div class="eyebrow"><span class="label">NATIVE DIGITAL ASSET</span></div>
+     <h1>$PRX</h1>
+     <p class="lede">$PRX is the native digital asset associated with the PRAXIS network and its ecosystem. It is one component of a larger system — not the identity of it.</p>
+   </div>
+
+   <div class="wrap section-pad" style="padding-top:clamp(36px,5vw,56px)">
+     <div class="box-hero">
+       <div>
+         <div class="metagrid" id="boxFacts"></div>
+       </div>
+       <div class="box-mark">${praxisMark()}</div>
+     </div>
+
+     <div class="rule" style="margin:52px 0 0"></div>
+     <div style="padding-block:clamp(38px,6vw,60px) 0">
+       <div class="eyebrow"><span class="label">WALLET</span></div>
+       <div style="display:flex;flex-wrap:wrap;gap:22px;align-items:center;justify-content:space-between">
+         <div style="min-width:min(100%,320px)">
+           <h2 style="font-size:clamp(19px,2.7vw,27px)" id="boxWalletHead">Connect a wallet to view $PRX holdings.</h2>
+           <p class="dim" id="boxWalletSub" style="margin-top:12px;font-size:13.5px;line-height:1.8;max-width:56ch">
+             Any Solana wallet works — Phantom, Solflare, Backpack. Connection reads your public
+             address only. $PRX is not yet deployed, so no balance is available — the interface is
+             built to display it once the asset exists.
+           </p>
+         </div>
+         <div id="boxWalletCtl"></div>
+       </div>
+     </div>
+
+     <div class="eyebrow" style="margin:56px 0 14px"><span class="label">PLANNED DISTRIBUTION</span></div>
+     <div id="boxDist"></div>
+     <p class="label" style="margin-top:14px;letter-spacing:.12em;line-height:1.9">
+       INDICATIVE ONLY · NOT FINAL · SUBJECT TO CHANGE BEFORE DEPLOYMENT
+     </p>
+
+     <div class="eyebrow" style="margin:52px 0 12px"><span class="label">DEPLOYMENT</span></div>
+     <p class="dim" style="font-size:14px;line-height:1.8;max-width:58ch">
+       $PRX is <span class="mono hl">NOT YET DEPLOYED</span>. When a contract exists its address appears
+       above and the data below populates automatically. Deployment is announced only on the
+       <a href="${DATA.channel.href}" target="_blank" rel="noopener" style="text-decoration:underline;color:var(--silver)">monitored channel</a>.
+     </p>
+
+     <div class="eyebrow" style="margin:52px 0 14px"><span class="label">MARKET DATA</span></div>
+     <div class="dash" id="boxDash"></div>
+     <div class="chart-ph">
+       <span class="cph-tag">$PRX / — · TERMINAL VIEW</span>
+       <canvas id="chartCanvas" aria-hidden="true"></canvas>
+       <div class="cph-mid">DATA FEED NOT CONNECTED</div>
+     </div>
+     <p class="label" style="margin-top:22px;letter-spacing:.13em;line-height:2">
+       NO PRICE DATA IS AVAILABLE UNTIL THE ASSET IS DEPLOYED. WHEN A MINT IS SET, THIS VIEW PULLS
+       LIVE DATA FROM DEXSCREENER.<br>
+       NOTHING HERE CONSTITUTES FINANCIAL ADVICE OR A GUARANTEE OF FUTURE VALUE.
+     </p>
+   </div>`;
+  app.appendChild(sec);
+
+  metaCells($("#boxFacts"),[
+    ["TOKEN", t.name],
+    ["SYMBOL", t.symbol],
+    ["NETWORK", t.network],
+    ["SUPPLY", t.supply],
+    ["CONTRACT", t.contract],
+    ["STATUS", t.status],
+  ]);
+
+  const dist=$("#boxDist");
+  (t.distribution||[]).forEach(x=>{
+    dist.appendChild(el("div","dist-row",
+      `<div class="dist-top"><span>${x.k}</span><span>${x.v}%</span></div>
+       <div class="dist-bar"><i style="width:${x.v}%"></i></div>
+       <div class="dist-note">${x.note}</div>`));
+  });
+
+  const d=$("#boxDash");
+  const m=t.market;
+  [["PRICE",m.price],["MARKET CAP",m.marketCap],["CIRCULATING SUPPLY",m.circulating],
+   ["TOTAL SUPPLY",m.total],["LIQUIDITY",m.liquidity],["HOLDERS",m.holders],["24H VOLUME",m.volume]]
+  .forEach(([k,v])=>{
+    d.appendChild(el("div","d",`<span class="label">${k}</span><span class="dv na">${v}</span>`));
+  });
+
+  chartPlaceholder($("#chartCanvas"));
+  fetchMarket();
+
+  const bpaint=()=>{
+    const on=!!WALLET.pubkey;
+    $("#boxWalletHead").textContent = on ? `Connected · ${WALLET.name}` : "Connect a wallet to view $PRX holdings.";
+    $("#boxWalletSub").innerHTML = on
+      ? `Address <span class="mono hl">${WALLET.short()}</span>${WALLET.balanceState==="ok"?` · <span class="mono hl">${WALLET.balance}</span>`:""} · $PRX balance <span class="mono hl">UNAVAILABLE — ASSET NOT DEPLOYED</span>. This interface initiates no transactions.`
+      : `Any Solana wallet works — Phantom, Solflare, Backpack. Connection reads your public address only. $PRX is not yet deployed, so no balance is available.`;
+    const c=$("#boxWalletCtl"); c.innerHTML="";
+    const btn=el("button","btn", on ? "MANAGE" : 'CONNECT WALLET <span class="ar">▸</span>');
+    btn.addEventListener("click", openWalletModal);
+    c.appendChild(btn);
+  };
+  WALLET.onChange = bpaint;
+  bpaint();
+}
+
+/* =============================================================
+   GLYPH  —  outline square (theory) + solid square (practice),
+   overlapping: the point where one becomes the other.
+   ============================================================= */
+function praxisMark(){
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="12" y="12" width="46" height="46" fill="none" stroke="#e8e8e6" stroke-width="2.5"/>
+    <rect x="42" y="42" width="46" height="46" fill="#e8e8e6"/>
+  </svg>`;
+}
+
+/* =============================================================
+   CANVAS: hero (rotating box + grid)
+   ============================================================= */
+function fitCanvas(cv){
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const r=cv.getBoundingClientRect();
+  cv.width=r.width*dpr; cv.height=r.height*dpr;
+  const ctx=cv.getContext("2d"); ctx.scale(dpr,dpr);
+  return {ctx, w:r.width, h:r.height};
+}
+function heroAnimation(){
+  const cv=$("#heroCanvas"); if(!cv) return;
+  let {ctx,w,h}=fitCanvas(cv);
+  const onR=()=>({ctx,w,h}={...fitCanvas(cv)});
+  window.addEventListener("resize",onR);
+  let a=0;
+  loop(()=>{
+    ctx.clearRect(0,0,w,h);
+    // grid
+    ctx.strokeStyle="rgba(35,35,39,.9)"; ctx.lineWidth=1;
+    for(let x=0;x<w;x+=26){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+    for(let y=0;y<h;y+=26){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+    const cx=w/2, cy=h/2, s=Math.min(w,h)*0.24;
+    if(!reduceMotion) a+=0.006;
+    // isometric-ish cube
+    const pts=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
+    const rot=pts.map(([x,y,z])=>{
+      let X=x*Math.cos(a)-z*Math.sin(a);
+      let Z=x*Math.sin(a)+z*Math.cos(a);
+      let Y=y*Math.cos(a*.6)-Z*Math.sin(a*.6);
+      Z=y*Math.sin(a*.6)+Z*Math.cos(a*.6);
+      const p=2.6/(2.6+Z);
+      return [cx+X*s*p, cy+Y*s*p];
+    });
+    const edges=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+    ctx.strokeStyle="rgba(232,232,230,.85)"; ctx.lineWidth=1.4;
+    edges.forEach(([i,j])=>{ ctx.beginPath(); ctx.moveTo(...rot[i]); ctx.lineTo(...rot[j]); ctx.stroke(); });
+    ctx.fillStyle="rgba(74,222,128,.9)";
+    ctx.beginPath(); ctx.arc(rot[0][0],rot[0][1],2.4,0,7); ctx.fill();
+    const tick=$("#heroTick"); if(tick) tick.textContent = pad(new Date().getUTCHours())+":"+pad(new Date().getUTCMinutes())+":"+pad(new Date().getUTCSeconds());
+  });
+}
+
+/* =============================================================
+   CANVAS: system activity graph
+   ============================================================= */
+function activityGraph(cv){
+  if(!cv) return;
+  let {ctx,w,h}=fitCanvas(cv);
+  window.addEventListener("resize",()=>({ctx,w,h}={...fitCanvas(cv)}));
+  const N=90; const data=Array.from({length:N},()=>0.4+Math.random()*0.2);
+  let f=0;
+  loop(()=>{
+    f++;
+    if(f%3===0 && !reduceMotion){
+      data.push(Math.max(0.05,Math.min(0.95, data[data.length-1]+(Math.random()-0.5)*0.22)));
+      data.shift();
+    }
+    ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle="rgba(27,27,31,1)"; ctx.lineWidth=1;
+    for(let i=0;i<5;i++){ const y=h*i/4; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+    ctx.beginPath();
+    data.forEach((v,i)=>{ const x=w*i/(N-1), y=h-v*h*0.9-h*0.05; i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+    ctx.strokeStyle="rgba(74,222,128,.75)"; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.closePath();
+    const g=ctx.createLinearGradient(0,0,0,h); g.addColorStop(0,"rgba(74,222,128,.10)"); g.addColorStop(1,"rgba(74,222,128,0)");
+    ctx.fillStyle=g; ctx.fill();
+  });
+}
+
+/* =============================================================
+   CANVAS: network graph
+   ============================================================= */
+function networkGraph(cv){
+  if(!cv) return;
+  let {ctx,w,h}=fitCanvas(cv);
+  window.addEventListener("resize",()=>{ ({ctx,w,h}={...fitCanvas(cv)}); layout(); });
+  let nodes=[], links=[], ghost;
+  function layout(){
+    const labels=DATA.network.nodes;
+    nodes=labels.map((l,i)=>{
+      const ang = i/labels.length * Math.PI*2 - Math.PI/2;
+      const rad = Math.min(w,h)*0.30;
+      return {
+        l, kind: l==="CORE"?"core": l==="ARCHIVE"?"arch": l==="UNKNOWN"?"unk":"node",
+        x: l==="CORE"? w/2 : w/2 + Math.cos(ang)*rad*(l==="UNKNOWN"?1.25:1),
+        y: l==="CORE"? h/2 : h/2 + Math.sin(ang)*rad*(l==="UNKNOWN"?1.15:1),
+        ph: Math.random()*6
+      };
+    });
+    links=[];
+    nodes.forEach((n,i)=>{ if(n.kind!=="core") links.push([0,i]); });
+    links.push([1,3],[2,4]);
+    ghost={x:w/2+Math.min(w,h)*0.42,y:h*0.3,ph:0};
+  }
+  layout();
+  let t=0;
+  loop(()=>{
+    t+=0.02;
+    ctx.clearRect(0,0,w,h);
+    // links
+    links.forEach(([a,b])=>{
+      const A=nodes[a],B=nodes[b]; if(!A||!B) return;
+      ctx.strokeStyle="rgba(35,35,39,1)"; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(A.x,A.y); ctx.lineTo(B.x,B.y); ctx.stroke();
+      // travelling pulse
+      const p=(Math.sin(t+a+b)+1)/2;
+      ctx.fillStyle="rgba(74,222,128,.8)";
+      ctx.beginPath(); ctx.arc(A.x+(B.x-A.x)*p, A.y+(B.y-A.y)*p, 1.6, 0, 7); ctx.fill();
+    });
+    // ghost node (appears/disappears)
+    const gv=(Math.sin(t*0.4)+1)/2;
+    if(gv>0.6){
+      ctx.strokeStyle=`rgba(106,106,114,${(gv-0.6)*2})`;
+      ctx.beginPath(); ctx.moveTo(nodes[0].x,nodes[0].y); ctx.lineTo(ghost.x,ghost.y); ctx.stroke();
+      ctx.fillStyle=`rgba(106,106,114,${(gv-0.6)*2})`;
+      ctx.beginPath(); ctx.arc(ghost.x,ghost.y,3,0,7); ctx.fill();
+      ctx.font="9px 'SF Mono',monospace"; ctx.fillText("UNRESOLVED", ghost.x+8, ghost.y+3);
+    }
+    // nodes
+    nodes.forEach(n=>{
+      const pulse = reduceMotion?0:Math.sin(t*2+n.ph)*1.2;
+      let col = n.kind==="core"?"#e8e8e6": n.kind==="unk"?"#6a6a72": n.kind==="arch"?"#9a9aa2":"#4ade80";
+      const r = n.kind==="core"?6: 4;
+      ctx.beginPath(); ctx.arc(n.x,n.y,r+Math.max(0,pulse),0,7);
+      ctx.fillStyle=col; ctx.globalAlpha = n.kind==="unk"?0.55:1; ctx.fill(); ctx.globalAlpha=1;
+      if(n.kind==="core"){ ctx.strokeStyle="rgba(232,232,230,.3)"; ctx.beginPath(); ctx.arc(n.x,n.y,12+Math.sin(t*2)*2,0,7); ctx.stroke(); }
+      ctx.fillStyle="rgba(154,154,162,.9)"; ctx.font="9px 'SF Mono',monospace";
+      ctx.fillText(n.l, n.x+10, n.y+3);
+    });
+  });
+}
+
+/* =============================================================
+   CANVAS: $PRX chart placeholder (professional terminal grid)
+   ============================================================= */
+function chartPlaceholder(cv){
+  if(!cv) return;
+  const {ctx,w,h}=fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle="rgba(27,27,31,1)"; ctx.lineWidth=1;
+  for(let x=0;x<w;x+=Math.max(40,w/14)){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+  for(let y=0;y<h;y+=Math.max(30,h/6)){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+  ctx.setLineDash([3,4]); ctx.strokeStyle="rgba(106,106,114,.5)";
+  ctx.beginPath(); ctx.moveTo(0,h*0.55); ctx.lineTo(w,h*0.55); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="rgba(106,106,114,.5)"; ctx.font="9px 'SF Mono',monospace";
+  ["—","—","—","—"].forEach((s,i)=>ctx.fillText(s, 6, 14+i*(h/6)));
+}
+
+/* =============================================================
+   MODAL CONTROL
+   ============================================================= */
+function openModal(){
+  $("#modal").classList.add("open");
+  $("#modal").classList.toggle("is-denied", !!$("#modalBody .denied"));
+  document.body.style.overflow="hidden";
+  decode($("#modalTag"), 400);
+  decode($("#modalBody h2"), 560);
+  afterModalOpen("#modal",".mclose");
+}
+function closeModal(){ $("#modal").classList.remove("open"); afterModalClose(); }
+$("#modalClose").addEventListener("click",closeModal);
+$("#modal").addEventListener("click",e=>{ if(e.target.id==="modal") closeModal(); });
+window.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeModal(); closeWalletModal(); closeTerm(); toggleMobile(false);} });
+$("#wmClose").addEventListener("click",closeWalletModal);
+$("#walletModal").addEventListener("click",e=>{ if(e.target.id==="walletModal") closeWalletModal(); });
+
+/* =============================================================
+   TERMINAL
+   ============================================================= */
+const termOut=$("#termOut"), termInput=$("#termInput");
+function tprint(html){ const d=el("div",null,html); termOut.appendChild(d); termOut.scrollTop=termOut.scrollHeight; }
+function openTerm(){ $("#terminal").classList.add("open"); $("#termToggle").style.display="none"; termInput.focus(); }
+function closeTerm(){ $("#terminal").classList.remove("open"); $("#termToggle").style.display="flex"; }
+$("#termToggle").addEventListener("click",openTerm);
+$("#termClose").addEventListener("click",closeTerm);
+
+const COMMANDS = {
+  help(){ return `AVAILABLE COMMANDS:
+  help        list commands
+  status      system status
+  whois       identify this organization
+  projects    active projects
+  network     network summary
+  files       archive summary
+  about       organization
+  prx         $PRX asset
+  channel     monitored channel
+  wallet      wallet status
+  connect     choose a wallet
+  disconnect  unlink wallet
+  clearance   session clearance
+  history     session activity
+  clear       clear terminal`; },
+  status(){ const s=DATA.system; return `PRAXIS SYSTEM
+  STATUS:   <span class="accent">${s.status}</span>
+  NETWORK:  <span class="accent">${s.network}</span>
+  SECURITY: <span class="accent">${s.security}</span>
+  CORE:     ${s.core}`; },
+  projects(){ return DATA.projects.map(p=>`  ${p.id}  ${p.name.padEnd(9)} ${p.status}`).join("\n"); },
+  network(){ const n=DATA.network; return `NETWORK STATUS: <span class="accent">${n.status}</span>
+  ACTIVE NODES:      ${n.activeNodes.toLocaleString('en-US')}
+  CONNECTED SYSTEMS: ${n.connectedSystems}
+  LAST SIGNAL:       ${["NODE 07","NODE 13","UNKNOWN"][Math.floor(Math.random()*3)]}`; },
+  files(){ return `PUBLIC FILES AVAILABLE: 12
+  RESTRICTED FILES: 37
+  CLASSIFIED FILES: 81`; },
+  about(){ return `PRAXIS — INDEPENDENT TECHNOLOGY ORGANIZATION
+  WE BUILD THINGS WE CAN'T EXPLAIN.
+  Some projects are public. Some are classified. Some may not exist.`; },
+  prx(){ const t=DATA.token; return `$PRX
+  NATIVE DIGITAL ASSET
+  STATUS: <span class="warnc">${t.status}</span>
+  NETWORK: ${t.network}
+  CONTRACT: ${t.contract}`; },
+  clearance(){ return `SESSION CLEARANCE: LEVEL ${WALLET.pubkey?"02 (AUTHENTICATED)":"01 (PUBLIC)"}
+  HIGHER LEVELS ARE NOT ISSUED THROUGH THIS INTERFACE.`; },
+  wallet(){
+    const det=availableAdapters().map(a=>a.name).join(", ")||"none";
+    return WALLET.pubkey
+    ? `WALLET: <span class="accent">CONNECTED</span>
+  PROVIDER: ${WALLET.name.toUpperCase()}
+  ADDRESS:  ${WALLET.pubkey}
+  SOL:      ${WALLET.solText()}
+  $PRX:     UNAVAILABLE — ASSET NOT DEPLOYED`
+    : `WALLET: <span class="warnc">DISCONNECTED</span>
+  DETECTED: ${det}
+  run 'connect' to choose a wallet. no keys or recovery phrase are ever requested.`; },
+  connect(){ openWalletModal(); return `OPENING WALLET SELECTION…`; },
+  disconnect(){ if(!WALLET.pubkey) return `NO WALLET CONNECTED.`; WALLET.disconnect(); return `WALLET DISCONNECTED.`; },
+  channel(){ return `MONITORED CHANNEL
+  ${DATA.channel.href}
+  DEPLOYMENT AND FILE RELEASES ARE ANNOUNCED HERE. NOTHING ELSE IS.`; },
+  whois(){ const y=Math.floor((Date.now()-DATA.system.epoch)/31536000000);
+    return `ORGANIZATION:   PRAXIS
+  TYPE:           INDEPENDENT TECHNOLOGY ORGANIZATION
+  LOCATION:       UNKNOWN
+  OPERATIONAL:    ~${y} YEARS
+  REGISTERED:     NO
+  CONTACT:        ${DATA.channel.href}`; },
+  history(){
+    const h=(window.__bbxHist||[]);
+    return h.length ? h.slice(-12).join("\n") : `NO PRIOR COMMANDS THIS SESSION.`; },
+  unknown(){ return `<span class="warnc">SOME THINGS AREN'T DOCUMENTED.</span>`; },
+  "000"(){ return `<span class="warnc">ACCESS LEVEL INSUFFICIENT.</span>`; },
+  clear(){ termOut.innerHTML=""; return ""; },
+  prx000(){
+    unlockedPRX000=true;
+    if((location.hash||"#/").startsWith("#/files")) router();
+    return `<span class="accent">FILE PRX-000 UNSEALED FOR THIS SESSION.</span>
+  Return to FILES.`; },
+};
+
+window.__bbxHist = window.__bbxHist || [];
+let _histIdx = -1;
+function runCommand(raw){
+  const cmd=raw.trim().toLowerCase();
+  tprint(`<span class="cmd">prx $ ${raw}</span>`);
+  if(!cmd) return;
+  if(cmd!=="history"){ window.__bbxHist.push(raw.trim()); _histIdx = window.__bbxHist.length; }
+  if(COMMANDS[cmd]!==undefined){
+    const out = COMMANDS[cmd]();
+    if(out) tprint(out);
+  } else {
+    tprint(`<span class="warnc">UNKNOWN COMMAND:</span> ${cmd}  — type 'help'`);
+  }
+}
+termInput.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){ runCommand(termInput.value); termInput.value=""; }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); const h=window.__bbxHist; if(h.length){ _histIdx=Math.max(0,_histIdx-1); termInput.value=h[_histIdx]||""; } }
+  else if(e.key==="ArrowDown"){ e.preventDefault(); const h=window.__bbxHist; _histIdx=Math.min(h.length,_histIdx+1); termInput.value=h[_histIdx]||""; }
+});
+tprint(`PRAXIS SECURE TERMINAL — type <span class="accent">help</span>`);
+
+/* =============================================================
+   LOADER SEQUENCE
+   ============================================================= */
+function runLoader(){
+  const kill=(delay)=>{ $("#loader").classList.add("done"); setTimeout(()=>{ const l=$("#loader"); if(l) l.remove(); }, delay); };
+  // full boot sequence only once per browser session
+  let seen=false; try{ seen = sessionStorage.getItem("praxis:booted")==="1"; }catch(e){}
+  if(seen){ kill(200); return; }
+  try{ sessionStorage.setItem("praxis:booted","1"); }catch(e){}
+
+  const lines=[
+    ["SYSTEM CHECK","OK"],["NETWORK","CONNECTED"],["SECURITY","ACTIVE"],["CORE","ONLINE"],
+  ];
+  const box=$("#llog");
+  let i=0;
+  const finish=()=>{
+    box.innerHTML += `<div style="margin-top:8px;color:var(--off-white);letter-spacing:.2em">WELCOME TO PRAXIS</div>`;
+    setTimeout(()=>kill(600), 420);
+  };
+  const tick=()=>{
+    if(i>=lines.length){ finish(); return; }
+    const [k,v]=lines[i++];
+    box.innerHTML += `<div>${k} ${".".repeat(Math.max(2,18-k.length))} <b>${v}</b></div>`;
+    setTimeout(tick, reduceMotion?60:300);
+  };
+  setTimeout(tick, 260);
+  $("#lskip").addEventListener("click",()=>kill(400));
+}
+
+/* =============================================================
+   EASTER EGG: konami-lite -> unseal PRX-000
+   ============================================================= */
+(function(){
+  const seq=["ArrowUp","ArrowUp","ArrowDown","ArrowDown","p","r","x"];
+  let k=[];
+  window.addEventListener("keydown",e=>{
+    k.push(e.key); k=k.slice(-seq.length);
+    if(seq.every((s,i)=>s.toLowerCase()===(k[i]||"").toLowerCase())){
+      unlockedPRX000=true;
+      openTerm();
+      tprint(`<span class="accent">SIGNAL RECEIVED — PRX-000 UNSEALED.</span>`);
+      if((location.hash||"#/").startsWith("#/files")) router();
+    }
+  });
+})();
+
+/* =============================================================
+   BOOT
+   ============================================================= */
+$("#menuBtn").addEventListener("click",()=>toggleMobile());
+$("#walletBtn").addEventListener("click", openWalletModal);
+$("#skipLink").addEventListener("click",()=>{ const app=$("#app"); app.focus(); app.scrollIntoView(); });
+buildNav();
+renderWalletUI();
+runLoader();
+router();
+
+// re-link the last-used wallet if it is still authorized (no prompt)
+window.addEventListener("load", ()=> setTimeout(()=>WALLET.eager(), 400));
+</script>
+</body>
+</html>
